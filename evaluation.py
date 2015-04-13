@@ -84,6 +84,7 @@ def evaluate(posDict):
 	precisionSum = 0.0
 	recallSum = 0.0
 	fscoreSum = 0.0
+	predictionCount = len(posDict)
 	
 	for pos in uniqueTagsScores.keys():
 		precisionSum += uniqueTagsScores[pos]['Precision']
@@ -94,10 +95,10 @@ def evaluate(posDict):
 	overallRecall = recallSum/float(len(uniqueTagsScores))
 	overallFscore = fscoreSum/float(len(uniqueTagsScores))
 
-	overallAccuracy = (float(correctPredictions)/float(len(posDict)))*100
-	falseTags = len(posDict)-correctPredictions
+	overallAccuracy = (float(correctPredictions)/float(predictionCount))*100
+	falseTags = predictionCount-correctPredictions
 
-	print "Total Predictions:\t"+str(len(posDict))
+	print "Total Predictions:\t"+str(predictionCount)
 	print "Correct Predictions:\t"+str(correctPredictions)
 	print "False Predictions:\t"+str(falseTags)
 	print ""
