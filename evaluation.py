@@ -78,7 +78,7 @@ def evaluate(posDict):
 
 		if uniqueTagsScores[pos]['Precision']+uniqueTagsScores[pos]['Recall'] == 0.00:
 			uniqueTagsScores[pos]['F-Score'] = 0.00
-g		else: uniqueTagsScores[pos]['F-Score'] = round((2*float(uniqueTagsScores[pos]['Precision'])*float(uniqueTagsScores[pos]['Recall']))/(float(uniqueTagsScores[pos]['Precision'])+float(uniqueTagsScores[pos]['Recall'])), 2)
+		else: uniqueTagsScores[pos]['F-Score'] = round((2*float(uniqueTagsScores[pos]['Precision'])*float(uniqueTagsScores[pos]['Recall']))/(float(uniqueTagsScores[pos]['Precision'])+float(uniqueTagsScores[pos]['Recall'])), 2)
 	
 
 	precisionSum = 0.0
