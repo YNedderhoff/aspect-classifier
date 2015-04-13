@@ -1,0 +1,6 @@
+# generic files to ignore
+# backup files (*~)
+*~
+
+# except this file
+!.gitignore
