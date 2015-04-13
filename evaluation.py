@@ -78,7 +78,7 @@ def evaluate(posDict):
 
 		if uniqueTagsScores[pos]['Precision']+uniqueTagsScores[pos]['Recall'] == 0.00:
 			uniqueTagsScores[pos]['F-Score'] = 0.00
-		else: uniqueTagsScores[pos]['F-Score'] = round((2*float(uniqueTagsScores[pos]['Precision'])*float(uniqueTagsScores[pos]['Recall']))/(float(uniqueTagsScores[pos]['Precision'])+float(uniqueTagsScores[pos]['Recall'])), 2)
+g		else: uniqueTagsScores[pos]['F-Score'] = round((2*float(uniqueTagsScores[pos]['Precision'])*float(uniqueTagsScores[pos]['Recall']))/(float(uniqueTagsScores[pos]['Precision'])+float(uniqueTagsScores[pos]['Recall'])), 2)
 	
 
 	precisionSum = 0.0
@@ -145,5 +145,7 @@ if __name__=='__main__':
 	print "Time: "+ str(t1-t0) + "sec."
 	#print >> outstream, " "
 	#outstream.close()
+
+	#branchtest
 
 
