@@ -12,10 +12,8 @@ class Token(object):
 		self.sparseFeatvec = {}
 		#print len(featvec)
 		
-		self.sparseFeatvec[featvec["current_pos_"+str(currentToken.gold_pos)]] = 1
-		if previousToken: self.sparseFeatvec[featvec["prev_pos_"+str(previousToken.gold_pos)]] = 1
-		if nextToken: self.sparseFeatvec[featvec["next_pos_"+str(nextToken.gold_pos)]] = 1
-
+		#if previousToken: self.sparseFeatvec[featvec["prev_pos_"+str(previousToken.gold_pos)]] = 1
+		
 		self.sparseFeatvec[featvec["current_form_"+str(currentToken.form)]] = 1
 		if previousToken: self.sparseFeatvec[featvec["prev_form_"+str(previousToken.form)]] = 1
 		if nextToken: self.sparseFeatvec[featvec["next_form_"+str(nextToken.form)]] = 1
@@ -133,17 +131,14 @@ def extractFeatures(filein):
 
 	featvec = {}
 	featvec["initial_token"] = len(featvec.keys())
+
 	for sid, sentence in enumerate(sentences(codecs.open(filein,encoding='utf-8'))):
 		for tid,token in enumerate(sentence):
 			# pos features
-
-			if not "current_pos_"+str(token.gold_pos) in featvec: featvec["current_pos_"+str(token.gold_pos)] = len(featvec.keys())
-			if not "current_pos_"+str(token.predicted_pos) in featvec: featvec["current_pos_"+str(token.predicted_pos)] = len(featvec.keys())
+			"""
 			if not "prev_pos_"+str(token.gold_pos) in featvec: featvec["prev_pos_"+str(token.gold_pos)] = len(featvec.keys())
 			if not "prev_pos_"+str(token.predicted_pos) in featvec: featvec["prev_pos_"+str(token.predicted_pos)] = len(featvec.keys())
-			if not "next_pos_"+str(token.gold_pos) in featvec: featvec["next_pos_"+str(token.gold_pos)] = len(featvec.keys())
-			if not "next_pos_"+str(token.predicted_pos) in featvec: featvec["next_pos_"+str(token.predicted_pos)] = len(featvec.keys())
-
+			"""
 			# form features
 
 			if not "current_form_"+str(token.form) in featvec: featvec["current_form_"+str(token.form)] = len(featvec.keys())
