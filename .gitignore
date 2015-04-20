@@ -2,6 +2,9 @@
 # backup files (*~)
 *~
 
+# files in .pyc format
+*.pyc
+
 # txt files (for example results)
 *.txt
 
