@@ -4,7 +4,7 @@ import time
 class Token(object):
 	def __init__( self, line ):
 		entries = line.split('\t')
-		self.form = entries[0]
+		self.form = entries[0].lower()
 		self.gold_pos = entries[1]
 		self.predicted_pos = entries [3]
 
@@ -19,7 +19,9 @@ class Token(object):
 		self.sparseFeatvec[featvec["current_form_"+str(currentToken.form)]] = 1
 		if previousToken: self.sparseFeatvec[featvec["prev_form_"+str(previousToken.form)]] = 1
 		if nextToken: self.sparseFeatvec[featvec["next_form_"+str(nextToken.form)]] = 1
-		#for feat in featvec:
+		
+
+		if not previousToken: self.sparseFeatvec[featvec["initial_token"]] = 1
 			
 
 
@@ -130,9 +132,9 @@ def evaluate(posDict):
 def extractFeatures(filein):
 
 	featvec = {}
+	featvec["initial_token"] = len(featvec.keys())
 	for sid, sentence in enumerate(sentences(codecs.open(filein,encoding='utf-8'))):
 		for tid,token in enumerate(sentence):
-
 			# pos features
 
 			if not "current_pos_"+str(token.gold_pos) in featvec: featvec["current_pos_"+str(token.gold_pos)] = len(featvec.keys())
@@ -148,6 +150,7 @@ def extractFeatures(filein):
 			if not "prev_form_"+str(token.form) in featvec: featvec["prev_form_"+str(token.form)] = len(featvec.keys())
 			if not "next_form_"+str(token.form) in featvec: featvec["next_form_"+str(token.form)] = len(featvec.keys())
 
+
 	return featvec
 
 if __name__=='__main__':
@@ -162,7 +165,6 @@ if __name__=='__main__':
 	args = argpar.parse_args()
 
 	posDict = {}
-	
 	featvec = extractFeatures(args.infile)
 	#outstream = open(args.outputfile,'w')
 	counter=0

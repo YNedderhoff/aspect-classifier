@@ -1,7 +1,11 @@
 #!/bin/bash
 
-paste ../team-lab-ss2015/data/pos/dev.col ../team-lab-ss2015/data/pos/dev-predicted.col >> ../team-lab-ss2015/data/pos/train.col
+CORPORA="../team-lab-ss2015/data/pos"
 
-python evaluation.py -i ../team-lab-ss2015/data/pos/train.col
+paste $CORPORA/dev.col $CORPORA/dev-predicted.col >> $CORPORA/train.col
+
+python evaluation.py -i $CORPORA/train.col
+
+rm $CORPORA/train.col
 
 
