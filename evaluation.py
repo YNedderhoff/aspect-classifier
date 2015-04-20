@@ -22,7 +22,7 @@ class Token(object):
 		if not previousToken: self.sparseFeatvec[featvec["initial_token"]] = 1
 			
 
-
+#test
 def sentences( filestream ):
 
 	sentence = []
