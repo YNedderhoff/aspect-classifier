@@ -1,5 +1,8 @@
 
-def evaluate(posDict):
+def evaluate(posDict, outfile):
+
+	print "\tEvaluate predictions"
+
 	goldPosSet = set()
 	predPosSet = set()
 	uniqueTags = {}
@@ -76,17 +79,19 @@ def evaluate(posDict):
 	overallAccuracy = (float(correctPredictions)/float(predictionCount))*100
 	falseTags = predictionCount-correctPredictions
 
-	print "Total Predictions:\t"+str(predictionCount)
-	print "Correct Predictions:\t"+str(correctPredictions)
-	print "False Predictions:\t"+str(falseTags)
-	print ""
-	print "Overall Accuracy:\t"+str(overallAccuracy)
-	print "Overall Precision:\t"+str(overallPrecision)
-	print "Overall Recall:\t"+str(overallRecall)
-	print "Overall F-Score:\t"+str(overallFscore)
-	print ""
+	print "\tWrite evaluation results to file"
 
-	print "Tagwise Accuracy, Precision, Recall and F-Score:\n"
+	print >> outfile, "Total Predictions:\t"+str(predictionCount)
+	print >> outfile, "Correct Predictions:\t"+str(correctPredictions)
+	print >> outfile, "False Predictions:\t"+str(falseTags)
+	print >> outfile, ""
+	print >> outfile, "Overall Accuracy:\t"+str(overallAccuracy)
+	print >> outfile, "Overall Precision:\t"+str(overallPrecision)
+	print >> outfile, "Overall Recall:\t"+str(overallRecall)
+	print >> outfile, "Overall F-Score:\t"+str(overallFscore)
+	print >> outfile, ""
+
+	print >> outfile, "Tagwise Accuracy, Precision, Recall and F-Score:\n"
 	for pos in uniqueTagsScores.keys():
-		print pos+"\tAccuracy: "+str(uniqueTagsScores[pos]['Accuracy'])+"\tPrecision: "+str(uniqueTagsScores[pos]['Precision'])+"\tRecall: "+str(uniqueTagsScores[pos]['Recall'])+"\tF-Score: "+str(uniqueTagsScores[pos]['F-Score'])
+		print >> outfile, pos+"\tAccuracy: "+str(uniqueTagsScores[pos]['Accuracy'])+"\tPrecision: "+str(uniqueTagsScores[pos]['Precision'])+"\tRecall: "+str(uniqueTagsScores[pos]['Recall'])+"\tF-Score: "+str(uniqueTagsScores[pos]['F-Score'])
 

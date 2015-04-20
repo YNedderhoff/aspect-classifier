@@ -12,7 +12,6 @@ class Token(object):
 
 	def createFeatureVector(self, featvec, currentToken, previousToken, nextToken):
 		self.sparseFeatvec = {}
-		#print len(featvec)
 		
 		#if previousToken: self.sparseFeatvec[featvec["prev_pos_"+str(previousToken.gold_pos)]] = 1
 		
@@ -60,35 +59,45 @@ def extractFeatures(filein):
 
 if __name__=='__main__':
 	t0 = time.time()
+
 	import argparse
-	argpar = argparse.ArgumentParser(description='Creates a feature representation for each word in a given file in CoNLL09 format')
-	
+	argpar = argparse.ArgumentParser(description='')
 	argpar.add_argument('-i','--infile',dest='infile',help='infile',required=True)
 	#argpar.add_argument('-g','--gold',dest='gold',help='gold',required=True)
 	#argpar.add_argument('-p','--prediction',dest='prediction',help='prediction',required=True)
-	#argpar.add_argument('-o','--output',dest='outputfile',help='output file',required=True)
+	argpar.add_argument('-o','--output',dest='outputfile',help='output file',required=True)
 	args = argpar.parse_args()
 
-	posDict = {}
+	outstream = open(args.outputfile,'w')
+
+	# Data structure which maps features to dimensions
 	featvec = extractFeatures(args.infile)
-	#outstream = open(args.outputfile,'w')
+
+	posDict = {}
 	counter=0
+
+	print "\tCreating feature vectors"
+	
 	for sid, sentence in enumerate(sentences(codecs.open(args.infile,encoding='utf-8'))):
 		for tid,token in enumerate(sentence):
+
+			# Creating posDict for evaluation
 			posDict[counter] = [token.gold_pos, token.predicted_pos]
+
+			# Create sparse feature vector representation for each token
 			if tid == 0:
 				token.createFeatureVector(featvec, sentence[tid], None, sentence[tid+1])
 			elif tid == len(sentence)-1:
 				token.createFeatureVector(featvec, sentence[tid], sentence[tid-1], None)
 			else:
 				token.createFeatureVector(featvec, sentence[tid], sentence[tid-1], sentence[tid+1])
-			#print token.sparseFeatvec
 			counter+=1
-	ev.evaluate(posDict)
+
+	ev.evaluate(posDict, outstream)
+
+	outstream.close()
+
 	t1 = time.time()
-	print "\n"
-	print "Time: "+ str(t1-t0) + "sec."
-	#print >> outstream, " "
-	#outstream.close()
+	print "\n\tDone. Time: "+ str(t1-t0) + "sec."
 
 

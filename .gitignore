@@ -2,5 +2,8 @@
 # backup files (*~)
 *~
 
+# txt files (for example results)
+*.txt
+
 # except this file
 !.gitignore
