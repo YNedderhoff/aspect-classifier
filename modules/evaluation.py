@@ -3,19 +3,9 @@ def evaluate(posDict, outfile):
 
 	print "\tEvaluate predictions"
 
-	goldPosSet = set()
-	predPosSet = set()
 	uniqueTags = {}
 	uniqueTagsScores = {}
 	correctPredictions = 0
-
-	for key in posDict:
-
-		# creates sets of gold and prediction tags
-
-		goldPosSet.add(posDict[key][0])
-		predPosSet.add(posDict[key][1])
-	
 
 	for key in posDict:
 
