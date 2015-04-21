@@ -1,47 +1,17 @@
 import codecs
 import time
 
+import modules.token as tk
+
 from modules.evaluation import evaluate
-
-class Token(object):
-	def __init__( self, line ):
-		entries = line.split('\t')
-		self.form = entries[0].lower()
-		self.gold_pos = entries[1]
-		self.predicted_pos = entries [3]
-
-	def createFeatureVector(self, featvec, currentToken, previousToken, nextToken):
-		self.sparseFeatvec = {}
-		
-		#if previousToken: self.sparseFeatvec[featvec["prev_pos_"+str(previousToken.gold_pos)]] = 1
-		
-		self.sparseFeatvec[featvec["current_form_"+str(currentToken.form)]] = 1
-		if previousToken: self.sparseFeatvec[featvec["prev_form_"+str(previousToken.form)]] = 1
-		if nextToken: self.sparseFeatvec[featvec["next_form_"+str(nextToken.form)]] = 1
-		
-
-		if not previousToken: self.sparseFeatvec[featvec["initial_token"]] = 1
-			
-
-def sentences( filestream ):
-
-	sentence = []
-	for line in filestream:
-		line = line.rstrip()
-		if line:
-			sentence.append(Token(line))
-		elif sentence:
-			yield sentence
-			sentence = []
-	if sentence:
-		yield sentence
+from modules.affixes import findAffixes
 
 def extractFeatures(filein):
 
 	featvec = {}
 	featvec["initial_token"] = len(featvec.keys())
 
-	for sid, sentence in enumerate(sentences(codecs.open(filein,encoding='utf-8'))):
+	for sid, sentence in enumerate(tk.sentences(codecs.open(filein,encoding='utf-8'))):
 		for tid,token in enumerate(sentence):
 			# pos features
 			"""
@@ -73,12 +43,14 @@ if __name__=='__main__':
 	# Data structure which maps features to dimensions
 	featvec = extractFeatures(args.infile)
 
+	findAffixes(args.infile, 5)
+	
 	posDict = {}
 	counter=0
 
 	print "\tCreating feature vectors"
 	
-	for sid, sentence in enumerate(sentences(codecs.open(args.infile,encoding='utf-8'))):
+	for sid, sentence in enumerate(tk.sentences(codecs.open(args.infile,encoding='utf-8'))):
 		for tid,token in enumerate(sentence):
 
 			# Creating posDict for evaluation
