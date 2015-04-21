@@ -1,7 +1,7 @@
 import codecs
 import time
 
-import modules.evaluation as ev
+from modules.evaluation import evaluate
 
 class Token(object):
 	def __init__( self, line ):
@@ -93,7 +93,7 @@ if __name__=='__main__':
 				token.createFeatureVector(featvec, sentence[tid], sentence[tid-1], sentence[tid+1])
 			counter+=1
 
-	ev.evaluate(posDict, outstream)
+	evaluate(posDict, outstream)
 
 	outstream.close()
 
