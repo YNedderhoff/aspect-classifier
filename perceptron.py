@@ -40,15 +40,27 @@ if __name__=='__main__':
 
 	outstream = open(args.outputfile,'w')
 
+	# find the most occuring prefixes and affixes
+	findAffixes(args.infile, 5)
+
+	
+
 	# Data structure which maps features to dimensions
+
+	print "\tExtracting features"
+	y0 = time.time()
+
 	featvec = extractFeatures(args.infile)
 
-	findAffixes(args.infile, 5)
+	y1 = time.time()
+	print "\t\t"+str(y1-y0)+" sec."
+
+	z0 = time.time()
 	
 	posDict = {}
 	counter=0
 
-	print "\tCreating feature vectors"
+	print "\tCreating Tokens (including feature vectors)"
 	
 	for sid, sentence in enumerate(tk.sentences(codecs.open(args.infile,encoding='utf-8'))):
 		for tid,token in enumerate(sentence):
@@ -64,6 +76,9 @@ if __name__=='__main__':
 			else:
 				token.createFeatureVector(featvec, sentence[tid], sentence[tid-1], sentence[tid+1])
 			counter+=1
+	
+	z1 = time.time()
+	print "\t\t"+str(z1-z0)+" sec."
 
 	evaluate(posDict, outstream)
 

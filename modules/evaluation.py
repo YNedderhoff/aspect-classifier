@@ -1,5 +1,8 @@
+import time
 
 def evaluate(posDict, outfile):
+	
+	t0 = time.time()
 
 	print "\tEvaluate predictions"
 
@@ -69,8 +72,13 @@ def evaluate(posDict, outfile):
 	overallAccuracy = (float(correctPredictions)/float(predictionCount))*100
 	falseTags = predictionCount-correctPredictions
 
-	print "\tWrite evaluation results to file"
+	t1 = time.time()
+	print "\t\t"+str(t1-t0)+" sec."
 
+	print "\tWrite evaluation results to file"
+	
+	z0 = time.time()	
+	
 	print >> outfile, "Total Predictions:\t"+str(predictionCount)
 	print >> outfile, "Correct Predictions:\t"+str(correctPredictions)
 	print >> outfile, "False Predictions:\t"+str(falseTags)
@@ -84,4 +92,7 @@ def evaluate(posDict, outfile):
 	print >> outfile, "Tagwise Accuracy, Precision, Recall and F-Score:\n"
 	for pos in uniqueTagsScores.keys():
 		print >> outfile, pos+"\tAccuracy: "+str(uniqueTagsScores[pos]['Accuracy'])+"\tPrecision: "+str(uniqueTagsScores[pos]['Precision'])+"\tRecall: "+str(uniqueTagsScores[pos]['Recall'])+"\tF-Score: "+str(uniqueTagsScores[pos]['F-Score'])
+	
+	z1 = time.time()
+	print "\t\t"+str(z1-z0)+" sec."
 
