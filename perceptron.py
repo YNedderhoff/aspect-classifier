@@ -46,7 +46,7 @@ if __name__=='__main__':
 	# Data structure which maps features to dimensions
 
 	print "\tExtracting features"
-	y0 = time.time()
+	y0 = time.time()py
 
 	featvec = extractFeatures(args.infile)
 
