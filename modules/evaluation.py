@@ -1,10 +1,22 @@
 import time
+import codecs
+import token as tk
 
-def evaluate(posDict, outfile):
+def evaluate(filein, outfile):
 	
 	t0 = time.time()
 
 	print "\tEvaluate predictions"
+
+	posDict = {}
+	counter=0
+
+	for sentence in tk.sentences(codecs.open(filein,encoding='utf-8')):
+		for tid,token in enumerate(sentence):
+
+			# Creating posDict for evaluation
+			posDict[counter] = [token.gold_pos, token.predicted_pos]
+			counter+=1
 
 	uniqueTags = {}
 	uniqueTagsScores = {}

@@ -24,8 +24,8 @@ def findAffixes(filein, lenList):
 
 	print "\tReading prefixes and suffixes"
 	t0 = time.time()
-	for sid, sentence in enumerate(tk.sentences(codecs.open(filein,encoding='utf-8'))):
-		for tid,token in enumerate(sentence):
+	for sentence in tk.sentences(codecs.open(filein,encoding='utf-8')):
+		for token in sentence:
 			for i in topX:
 				if len(token.form[-i:]) == i:
 					if not len(token.form) == i:
