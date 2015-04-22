@@ -20,9 +20,9 @@ def extractFeatures(filein):
 			"""
 			# form features
 
-			if not "current_form_"+str(token.form) in featvec: featvec["current_form_"+str(token.form)] = len(featvec.keys())
-			if not "prev_form_"+str(token.form) in featvec: featvec["prev_form_"+str(token.form)] = len(featvec.keys())
-			if not "next_form_"+str(token.form) in featvec: featvec["next_form_"+str(token.form)] = len(featvec.keys())
+			if not "current_form_"+str(token.form) in featvec: featvec["current_form_"+str(token.form)] = len(featvec)
+			if not "prev_form_"+str(token.form) in featvec: featvec["prev_form_"+str(token.form)] = len(featvec)
+			if not "next_form_"+str(token.form) in featvec: featvec["next_form_"+str(token.form)] = len(featvec)
 
 
 	return featvec
@@ -41,9 +41,7 @@ if __name__=='__main__':
 	outstream = open(args.outputfile,'w')
 
 	# find the most occuring prefixes and affixes
-	findAffixes(args.infile, 5)
-
-	
+	findAffixes(args.infile, 5)	
 
 	# Data structure which maps features to dimensions
 
@@ -60,7 +58,7 @@ if __name__=='__main__':
 	posDict = {}
 	counter=0
 
-	print "\tCreating Tokens (including feature vectors)"
+	print "\tRead data and create Tokens (including feature vectors)"
 	
 	for sid, sentence in enumerate(tk.sentences(codecs.open(args.infile,encoding='utf-8'))):
 		for tid,token in enumerate(sentence):
