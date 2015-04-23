@@ -11,40 +11,35 @@ def evaluate(filein, outfile):
 	posDict = {}
 	counter=0
 
-	for sentence in tk.sentences(codecs.open(filein,encoding='utf-8')):
-		for tid,token in enumerate(sentence):
-
-			# Creating posDict for evaluation
-			posDict[counter] = [token.gold_pos, token.predicted_pos]
-			counter+=1
-
+	predictionCount = 0
 	uniqueTags = {}
 	uniqueTagsScores = {}
 	correctPredictions = 0
 
-	for key in posDict:
+	for sentence in tk.sentences(codecs.open(filein,encoding='utf-8')):
+		for tid,token in enumerate(sentence):
+			
+			predictionCount += 1
 
-		# creates a dictionary with every existing tag (either existing only in gold, only in 
-		# prediction, or both) the key and a dictionary each as the value containing TP, FN, FP
-		# as the key and zero as the value.
+			# uniqueTags contains every existing POS tag, whether it exists only in
+			# gold, predicted, or both. The value is the dict {'TP':0,'FN':0,'FP':0}
 
-		if posDict[key][0] not in uniqueTags.keys():
-			uniqueTags[posDict[key][0]] = {'TP':0,'FN':0,'FP':0}
-		if posDict[key][1] not in uniqueTags.keys():
-			uniqueTags[posDict[key][1]] = {'TP':0,'FN':0,'FP':0}
+			if token.gold_pos not in uniqueTags:
+				uniqueTags[token.gold_pos] = {'TP':0,'FN':0,'FP':0}
+			if token.predicted_pos not in uniqueTags:
+				uniqueTags[token.predicted_pos] = {'TP':0,'FN':0,'FP':0}
 
-	for key in posDict:
+			# if the prediction was correct, TP of the gold POS is increased by 1
+			# if not, the FN of the gold POS and FP of the predicted pos are increased by 1
 
-		# Computes TP, FN and FP for each unique tag.
+			if token.gold_pos == token.predicted_pos:
+				correctPredictions+=1
+				uniqueTags[token.gold_pos]['TP']+=1
+			else:
+				uniqueTags[token.gold_pos]['FN']+=1
+				uniqueTags[token.predicted_pos]['FP']+=1
 
-		if posDict[key][0] == posDict[key][1]:
-			correctPredictions+=1
-			uniqueTags[posDict[key][0]]['TP']+=1
-		else:
-			uniqueTags[posDict[key][0]]['FN']+=1
-			uniqueTags[posDict[key][1]]['FP']+=1
-
-	for pos in uniqueTags.keys():
+	for pos in uniqueTags:
 
 		# Computes Precision, Recall, Accuracy and F-Score for each Tag based on TP, FN, FP.
 
@@ -70,9 +65,10 @@ def evaluate(filein, outfile):
 	precisionSum = 0.0
 	recallSum = 0.0
 	fscoreSum = 0.0
-	predictionCount = len(posDict)
+
+	falseTags = predictionCount-correctPredictions
 	
-	for pos in uniqueTagsScores.keys():
+	for pos in uniqueTagsScores:
 		precisionSum += uniqueTagsScores[pos]['Precision']
 		recallSum += uniqueTagsScores[pos]['Recall']
 		fscoreSum += uniqueTagsScores[pos]['F-Score']
@@ -82,7 +78,6 @@ def evaluate(filein, outfile):
 	overallFscore = fscoreSum/float(len(uniqueTagsScores))
 
 	overallAccuracy = (float(correctPredictions)/float(predictionCount))*100
-	falseTags = predictionCount-correctPredictions
 
 	t1 = time.time()
 	print "\t\t"+str(t1-t0)+" sec."
