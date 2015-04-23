@@ -20,11 +20,11 @@ def extractFeatures(filein):
 			"""
 			# form features
 
-			if not "current_form_"+str(token.form) in featvec: featvec["current_form_"+str(token.form)] = len(featvec)
-			if not "prev_form_"+str(token.form) in featvec: featvec["prev_form_"+str(token.form)] = len(featvec)
-			if not "next_form_"+str(token.form) in featvec: featvec["next_form_"+str(token.form)] = len(featvec)
+			if not "current_form_"+token.form in featvec: featvec["current_form_"+token.form] = len(featvec)
+			if not "prev_form_"+token.form in featvec: featvec["prev_form_"+token.form] = len(featvec)
+			if not "next_form_"+token.form in featvec: featvec["next_form_"+token.form] = len(featvec)
 
-
+	print "\t"+str(len(featvec))+" features extracted"
 	return featvec
 
 class posTagger(object):
@@ -44,19 +44,21 @@ class posTagger(object):
 
 		z0 = time.time()
 
-		print "\tRead data and create Tokens (including feature vectors)"
-	
+		print "\tCreate Tokens (including feature vectors)"
+
 		for sentence in tk.sentences(codecs.open(args.infile,encoding='utf-8')):
 			for tid,token in enumerate(sentence):
 
 				# Create sparse feature vector representation for each token
 				if tid == 0:
-					token.createFeatureVector(featvec, sentence[tid], None, sentence[tid+1])
+					try:
+						token.createFeatureVector(featvec, sentence[tid], None, sentence[tid+1])
+					except IndexError: # happens if sentence length is 1
+						token.createFeatureVector(featvec, sentence[tid], None, None)
 				elif tid == len(sentence)-1:
 					token.createFeatureVector(featvec, sentence[tid], sentence[tid-1], None)
 				else:
 					token.createFeatureVector(featvec, sentence[tid], sentence[tid-1], sentence[tid+1])
-	
 		z1 = time.time()
 		print "\t\t"+str(z1-z0)+" sec."
 	def test(self):

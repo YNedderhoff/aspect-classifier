@@ -1,5 +1,7 @@
 #!/bin/bash
 
+START=$(date +%s%N)
+
 CORPORA="../team-lab-ss2015/data/pos"
 
 paste $CORPORA/dev.col $CORPORA/dev-predicted.col >> $CORPORA/train.col
@@ -18,4 +20,8 @@ python perceptron.py -ev -i $CORPORA/train.col -o evaluation.txt
 
 rm $CORPORA/train.col
 
-
+END=$(date +%s%N)
+DIFF=$(( $END - $START ))
+echo "It took $DIFF seconds"
+echo $END
+echo $(date +%s%N)

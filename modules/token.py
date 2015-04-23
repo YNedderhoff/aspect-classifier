@@ -10,9 +10,9 @@ class Token(object):
 		
 		#if previousToken: self.sparseFeatvec[featvec["prev_pos_"+str(previousToken.gold_pos)]] = 1
 		
-		self.sparseFeatvec[featvec["current_form_"+str(currentToken.form)]] = 1
-		if previousToken: self.sparseFeatvec[featvec["prev_form_"+str(previousToken.form)]] = 1
-		if nextToken: self.sparseFeatvec[featvec["next_form_"+str(nextToken.form)]] = 1
+		self.sparseFeatvec[featvec["current_form_"+currentToken.form]] = 1
+		if previousToken: self.sparseFeatvec[featvec["prev_form_"+previousToken.form]] = 1
+		if nextToken: self.sparseFeatvec[featvec["next_form_"+nextToken.form]] = 1
 		
 
 		if not previousToken: self.sparseFeatvec[featvec["initial_token"]] = 1
