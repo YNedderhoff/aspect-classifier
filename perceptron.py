@@ -34,6 +34,8 @@ class posTagger(object):
 	def train(self, filein):
 		# Data structure which maps features to dimensions
 
+		print "\tTraining file: "+filein
+
 		print "\tExtracting features"
 		y0 = time.time()
 
@@ -61,8 +63,8 @@ class posTagger(object):
 					token.createFeatureVector(featvec, sentence[tid], sentence[tid-1], sentence[tid+1])
 		z1 = time.time()
 		print "\t\t"+str(z1-z0)+" sec."
-	def test(self):
-		pass
+	def test(self, filein):
+		print "\t Test file: "+filein
 
 if __name__=='__main__':
 	t0 = time.time()
@@ -93,7 +95,7 @@ if __name__=='__main__':
 		t.train(args.infile)
 	elif args.test:
 		print "Running in test mode\n"
-		pass
+		t.test(args.infile)
 	elif args.evaluate:
 		print "Running in evaluation mode\n"
 
