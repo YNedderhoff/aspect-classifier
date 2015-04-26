@@ -8,5 +8,8 @@
 # txt files (for example results)
 *.txt
 
+#for testing on big corpus, just temporary
+run2.sh
+
 # except this file
 !.gitignore
