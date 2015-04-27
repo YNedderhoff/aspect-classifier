@@ -47,25 +47,25 @@ def evaluate(file_in, out_file):
 		if unique_tags[pos]['TP']+unique_tags[pos]['FP'] == 0:
 			unique_tags_scores[pos]['precision'] = 0.00
 		else:
-			unique_tags_scores[pos]['precision']=round((float(unique_tags[pos]['TP']))/(float(unique_tags[pos]['TP'])+
+			unique_tags_scores[pos]['precision']=round((float(unique_tags[pos]['TP']))/(float(unique_tags[pos]['TP'])+ \
                                                                                                     float(unique_tags[pos]['FP']))*100.00, 2)
 
 		if unique_tags[pos]['TP']+unique_tags[pos]['FN'] == 0:
 			unique_tags_scores[pos]['recall'] = 0.00
-		else: unique_tags_scores[pos]['recall']=round((float(unique_tags[pos]['TP']))/(float(unique_tags[pos]['TP'])+
+		else: unique_tags_scores[pos]['recall']=round((float(unique_tags[pos]['TP']))/(float(unique_tags[pos]['TP'])+ \
                                                                                                float(unique_tags[pos]['FN']))*100.00, 2)
 
 		if unique_tags[pos]['TP']+unique_tags[pos]['FP']+unique_tags[pos]['FN'] == 0:
 			unique_tags_scores[pos]['accuracy'] = 0.00
-		else: unique_tags_scores[pos]['accuracy']=round(float(unique_tags[pos]['TP'])/(float(unique_tags[pos]['TP'])+
-                                                                                               float(unique_tags[pos]['FN'])+
+		else: unique_tags_scores[pos]['accuracy']=round(float(unique_tags[pos]['TP'])/(float(unique_tags[pos]['TP'])+ \
+                                                                                               float(unique_tags[pos]['FN'])+ \
                                                                                                float(unique_tags[pos]['FP']))*100.00, 2)
 
 		if unique_tags_scores[pos]['precision']+unique_tags_scores[pos]['recall'] == 0.00:
 			unique_tags_scores[pos]['f-score'] = 0.00
-		else: unique_tags_scores[pos]['f-score'] = round((2*float(unique_tags_scores[pos]['precision'])*
-                                                                  float(unique_tags_scores[pos]['recall']))/
-                                                                 (float(unique_tags_scores[pos]['precision'])+
+		else: unique_tags_scores[pos]['f-score'] = round((2*float(unique_tags_scores[pos]['precision'])* \
+                                                                  float(unique_tags_scores[pos]['recall']))/ \
+                                                                 (float(unique_tags_scores[pos]['precision'])+ \
                                                                   float(unique_tags_scores[pos]['recall'])), 2)
 	
 
@@ -106,9 +106,9 @@ def evaluate(file_in, out_file):
 
 	print >> outfile, "Tagwise Accuracy, Precision, Recall and F-Score:\n"
 	for pos in unique_tags_scores.keys():
-		print >> outfile, pos+"\tAccuracy: "+str(unique_tags_scores[pos]['accuracy'])+"\tPrecision: "+
-                                  str(unique_tags_scores[pos]['precision'])+"\tRecall: "+
-                                  str(unique_tags_scores[pos]['recall'])+"\tF-Score: "+
+		print >> outfile, pos+"\tAccuracy: "+str(unique_tags_scores[pos]['accuracy'])+"\tPrecision: "+ \
+                                  str(unique_tags_scores[pos]['precision'])+"\tRecall: "+ \
+                                  str(unique_tags_scores[pos]['recall'])+"\tF-Score: "+ \
                                   str(unique_tags_scores[pos]['f-score'])
 	
 	z1 = time.time()
