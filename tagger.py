@@ -73,7 +73,7 @@ class posTagger(object):
 
 		# instantiate a classifier for each pos tag type:
 		for tag in tag_set:
-			classifiers[tag] = perceptron.classifier(tag, len(feat_vec))
+			classifiers[tag] = perceptron.classifier(len(feat_vec))
 
                 # train the classifiers:
 		for i in range(max_iterations):
