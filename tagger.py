@@ -245,7 +245,7 @@ if __name__=='__main__':
 		t.test(args.in_file, args.model, args.output_file)
 	elif args.evaluate:
 		print "Running in evaluation mode\n"
-		outstream = open(args.output_file,'w')
+		out_stream = open(args.output_file,'w')
 		evaluate(args.in_file, out_stream)
 		out_stream.close()
 
