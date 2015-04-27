@@ -119,7 +119,7 @@ class posTagger(object):
 		x0 = time.time()
 		feat_vec = self.extractFeatures(file_in)
 		x1 = time.time()
-		print "\t"+str(len(self.feat_vec))+" features extracted"
+		print "\t"+str(len(feat_vec))+" features extracted"
 		print "\t\t"+str(x1-x0)+" sec."
 
 		print "\tCreating tokens with feature vectors"
@@ -140,7 +140,7 @@ class posTagger(object):
 						token.createFeatureVector(feat_vec, sentence[t_id],
                                                                           None, None)
 				elif t_id == len(sentence)-1: # last token of sentence
-					token.createFeatureVector(fea_tvec, sentence[t_id],
+					token.createFeatureVector(feat_vec, sentence[t_id],
                                                                   sentence[t_id-1], None)
 				else:
 					token.createFeatureVector(feat_vec, sentence[t_id],
