@@ -188,11 +188,11 @@ class posTagger(object):
 
 		feat_vec = {}
 		feat_vec["initial_token"] = len(feat_vec)
-
+                counter = 0
                 # iterate over all tokens to extract features:
 		for sentence in tk.sentences(codecs.open(file_in,encoding='utf-8')):                      
 			for token in sentence:
-                                
+                                counter += 1
 				# POS features:
 				"""
 				if not "prev_pos_"+str(token.gold_pos) in feat_vec:
@@ -215,7 +215,7 @@ class posTagger(object):
                                         print feat_vec["current_form_"+token.form]
                                         print feat_vec["prev_form_"+token.form]
                                         print feat_vec["next_form_"+token.form]
-
+                print counter
 		return feat_vec
 
 
