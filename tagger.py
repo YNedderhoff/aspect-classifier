@@ -134,8 +134,8 @@ class posTagger(object):
 					arg_max[0] = tag
 					arg_max[1] = temp
 			t.predicted_pos = arg_max[0]
-			output.write(t.form.encode("utf-8") + "\t" + t.gold_pos.encode("utf-8") + "\t" + \
-				     t.predicted_pos.encode("utf-8") + "\n")
+			print >> output, t.form.encode("utf-8") + "\t" + t.gold_pos.encode("utf-8") + "\t" + \
+				     t.predicted_pos.encode("utf-8")
 		output.close()
 		z1 = time.time()
 		print "\t\t"+str(z1-z0)+" sec."
