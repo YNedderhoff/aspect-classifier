@@ -2,3 +2,4 @@
 * Position im Satz
 * Häufige Suffixe/Präfixe
 * Häufige Buchstabenkombinationen
+* CAPS
