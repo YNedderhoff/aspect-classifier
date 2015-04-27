@@ -4,8 +4,8 @@ CORPORA="../team-lab-ss2015/data/pos"
 
 rm prediction.col
 
-head -200 $CORPORA/train.col >> $CORPORA/train_top5000.col
-head -200 $CORPORA/dev.col >> $CORPORA/dev_top5000.col
+head -1000 $CORPORA/train.col >> $CORPORA/train_top5000.col
+head -1000 $CORPORA/dev.col >> $CORPORA/dev_top5000.col
 
 # Finding possible features, e.g. Affixes.
 #python tagger.py -feat -i $CORPORA/train.col
