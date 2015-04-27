@@ -6,27 +6,6 @@ import modules.token as tk
 from modules.evaluation import evaluate
 from modules.affixes import findAffixes
 
-def extractFeatures(filein):
-
-	featvec = {}
-	featvec["initial_token"] = len(featvec.keys())
-
-	for sentence in tk.sentences(codecs.open(filein,encoding='utf-8')):
-		for token in sentence:
-			# pos features
-			"""
-			if not "prev_pos_"+str(token.gold_pos) in featvec: featvec["prev_pos_"+str(token.gold_pos)] = len(featvec.keys())
-			if not "prev_pos_"+str(token.predicted_pos) in featvec: featvec["prev_pos_"+str(token.predicted_pos)] = len(featvec.keys())
-			"""
-			# form features
-
-			if not "current_form_"+token.form in featvec: featvec["current_form_"+token.form] = len(featvec)
-			if not "prev_form_"+token.form in featvec: featvec["prev_form_"+token.form] = len(featvec)
-			if not "next_form_"+token.form in featvec: featvec["next_form_"+token.form] = len(featvec)
-
-	print "\t"+str(len(featvec))+" features extracted"
-	return featvec
-
 class posTagger(object):
 	def __init__(self):
 		pass
@@ -39,7 +18,7 @@ class posTagger(object):
 		print "\tExtracting features"
 		y0 = time.time()
 
-		featvec = extractFeatures(args.infile)
+		featvec = self.extractFeatures(args.infile)
 
 		y1 = time.time()
 		print "\t\t"+str(y1-y0)+" sec."
@@ -65,6 +44,27 @@ class posTagger(object):
 		print "\t\t"+str(z1-z0)+" sec."
 	def test(self, filein):
 		print "\t Test file: "+filein
+
+	def extractFeatures(filein):
+
+		featvec = {}
+		featvec["initial_token"] = len(featvec.keys())
+
+		for sentence in tk.sentences(codecs.open(filein,encoding='utf-8')):
+			for token in sentence:
+				# pos features
+				"""
+				if not "prev_pos_"+str(token.gold_pos) in featvec: featvec["prev_pos_"+str(token.gold_pos)] = len(featvec.keys())
+				if not "prev_pos_"+str(token.predicted_pos) in featvec: featvec["prev_pos_"+str(token.predicted_pos)] = len(featvec.keys())
+				"""
+				# form features
+
+				if not "current_form_"+token.form in featvec: featvec["current_form_"+token.form] = len(featvec)
+				if not "prev_form_"+token.form in featvec: featvec["prev_form_"+token.form] = len(featvec)
+				if not "next_form_"+token.form in featvec: featvec["next_form_"+token.form] = len(featvec)
+
+		print "\t"+str(len(featvec))+" features extracted"
+		return featvec
 
 if __name__=='__main__':
 	t0 = time.time()
