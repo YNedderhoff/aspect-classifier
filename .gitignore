@@ -11,5 +11,11 @@
 #for testing on big corpus, just temporary
 run2.sh
 
+#the model
+model
+
+# the corpora
+*.col
+
 # except this file
 !.gitignore

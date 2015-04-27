@@ -45,7 +45,6 @@ class posTagger(object):
 		tagset = set()
 		for sentence in tk.sentences(codecs.open(filein,encoding='utf-8')):
 			for tid,token in enumerate(sentence):
-
 				# Create sparse feature vector representation for each token
 				if tid == 0:
 					try:
@@ -63,7 +62,7 @@ class posTagger(object):
 		classifiers = {}
 		for tag in tagset:
 			classifiers[tag] = cl.classifier(tag, len(featvec))
-		
+
 		for i in range(max_iterations):
 			for ind,t in enumerate(tokens):
 				if ind % 100 == 0:
@@ -85,9 +84,10 @@ class posTagger(object):
 		z1 = time.time()
 		print "\t\t"+str(z1-z0)+" sec."
 
-	def test(self, filein, model, fileout):
-		classifiers = self.load(model)
-		print len(classifiers)
+	def test(self, filein, mod, fileout):
+		self.load(mod)
+		classifiers = self.model
+
 		print "\t Test file: "+filein
 
 		# Data structure which maps features to dimensions
@@ -174,7 +174,7 @@ if __name__=='__main__':
 	mode.add_argument('-ev',dest='evaluate',action='store_true',help='run in evaluation mode')
 
 	argpar.add_argument('-i','--infile',dest='infile',help='infile',required=True)
-	argpar.add_argument('-m','--model',dest='model',help='model',required=True)
+	argpar.add_argument('-m','--model',dest='model',help='model',default='model')
 	#argpar.add_argument('-g','--gold',dest='gold',help='gold',required=True)
 	#argpar.add_argument('-p','--prediction',dest='prediction',help='prediction',required=True)
 	argpar.add_argument('-o','--output',dest='outputfile',help='output file',default='output.txt')
