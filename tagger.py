@@ -175,7 +175,7 @@ class posTagger(object):
 			t.predicted_pos = arg_max[0]
 
 			# print token with predicted POS tag to file:
-			print >> output, t.form.encode("utf-8") + "\t" + t.gold_pos.encode("utf-8") + 
+			print >> output, t.form.encode("utf-8") + "\t" + t.gold_pos.encode("utf-8") + \
                                          "\t" + t.predicted_pos.encode("utf-8")                       
 		output.close()
 		
