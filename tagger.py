@@ -82,12 +82,12 @@ class posTagger(object):
 					print "\t\t"+ str(ind) + "/" + str(len(tokens))
 
 				# expand sparse token feature vectors into all dimensions:
-				expanded_feat_vec = t.expandFeatVec(len(feat_vec))
+				#expanded_feat_vec = t.expandFeatVec(len(feat_vec))
 				
 				arg_max = ["", 0.0]
 				for tag in classifiers:
-					temp = classifiers[tag].classify(expanded_feat_vec)
-                                        #temp = classifiers[tag].classify(t.sparse_feat_vec)
+					#temp = classifiers[tag].classify(expanded_feat_vec)
+                                        temp = classifiers[tag].classify(t.sparse_feat_vec)
 
 					# remember highest classification result:
 					if temp > arg_max[1]:
@@ -96,10 +96,10 @@ class posTagger(object):
 
                                 # adjust classifier weights for incorrectly predicted tag and gold tag:
 				if arg_max[0] != t.gold_pos:
-					classifiers[t.gold_pos].adjust_weights(expanded_feat_vec, True, 0.1)
-					classifiers[arg_max[0]].adjust_weights(expanded_feat_vec, False, 0.1)
-                                        #classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, 0.1)
-					#classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, 0.1)
+					#classifiers[t.gold_pos].adjust_weights(expanded_feat_vec, True, 0.1)
+					#classifiers[arg_max[0]].adjust_weights(expanded_feat_vec, False, 0.1)
+                                        classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, 0.1)
+					classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, 0.1)
 
                 # after training is completed, save classifier vectors (model) to file:
 		self.save(file_out, classifiers)
@@ -159,12 +159,12 @@ class posTagger(object):
                                 print "\t\t"+ str(ind) + "/" + str(len(tokens))
 
                         # expand sparse token feature vectors into all dimensions:
-			expanded_feat_vec = t.expandFeatVec(len(feat_vec))
+			#expanded_feat_vec = t.expandFeatVec(len(feat_vec))
 
 			arg_max = ["", 0.0]
 			for tag in classifiers:
-				temp = classifiers[tag].classify(expanded_feat_vec)
-                                #temp = classifiers[tag].classify(t.sparse_feat_vec)
+				#temp = classifiers[tag].classify(expanded_feat_vec)
+                                temp = classifiers[tag].classify(t.sparse_feat_vec)
 
 				# remember highest classification result:
 				if temp > arg_max[1]:
@@ -186,7 +186,7 @@ class posTagger(object):
 	def extractFeatures(self, file_in):
 
 		feat_vec = {}
-		feat_vec["initial_token"] = 0
+		feat_vec["initial_token"] = len(feat_vec)
 
                 # iterate over all tokens to extract features:
 		for sentence in tk.sentences(codecs.open(file_in,encoding='utf-8')):                      
@@ -207,6 +207,13 @@ class posTagger(object):
                                         feat_vec["prev_form_"+token.form] = len(feat_vec)
 				if not "next_form_"+token.form in feat_vec:
                                         feat_vec["next_form_"+token.form] = len(feat_vec)
+                                if len(feat_vec) == 1266:
+                                        for elem in sentence:
+                                                print elem.form
+                                                print elem.gold_pos
+                                        print feat_vec["current_form_"+token.form]
+                                        print feat_vec["prev_form_"+token.form]
+                                        print feat_vec["next_form_"+token.form]
 
 		return feat_vec
 
