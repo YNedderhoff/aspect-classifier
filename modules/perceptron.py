@@ -9,7 +9,7 @@ class classifier(object):
 		#return sum([self.weight_vector[i]*float(feat_vec[i]) for i in range(len(feat_vec))])
                 #return sum([self.weight_vector[i] for i in feat_vec])
                 for i in feat_vec:
-                        print i
+                        print len(self.weight_vector)
                         self.weight_vector[i] = -100
                 
         # adjust the weights upon incorrect prediction:
