@@ -243,12 +243,12 @@ if __name__=='__main__':
 		t.train(args.in_file, args.model, 1)
 	elif args.test:
 		print "Running in test mode\n"
-		#t.test(args.in_file, args.model, args.output_file)
+		t.test(args.in_file, args.model, args.output_file)
 	elif args.evaluate:
 		print "Running in evaluation mode\n"
-		#out_stream = open(args.output_file,'w')
-		#evaluate(args.in_file, out_stream)
-		#out_stream.close()
+		out_stream = open(args.output_file,'w')
+		evaluate(args.in_file, out_stream)
+		out_stream.close()
 
 	t1 = time.time()
 	print "\n\tDone. Total time: "+ str(t1-t0) + "sec.\n"
