@@ -36,6 +36,7 @@ class posTagger(object):
 		x0 = time.time()
 		feat_vec = self.extractFeatures(file_in)
 		x1 = time.time()
+		print "\t"+str(len(feat_vec))+" features extracted"
 		print "\t\t"+str(x1-x0)+" sec."
 
 		print "\tCreating tokens with feature vectors"
