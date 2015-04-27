@@ -82,12 +82,12 @@ class posTagger(object):
 					print "\t\t"+ str(ind) + "/" + str(len(tokens))
 
 				# expand sparse token feature vectors into all dimensions:
-				expanded_feat_vec = t.expandFeatVec(len(feat_vec))
+				#expanded_feat_vec = t.expandFeatVec(len(feat_vec))
 				
 				arg_max = ["", 0.0]
 				for tag in classifiers:
-					temp = classifiers[tag].classify(expanded_feat_vec)
-                                        #temp = classifiers[tag].classify(t.sparse_feat_vec)
+					#temp = classifiers[tag].classify(expanded_feat_vec)
+                                        temp = classifiers[tag].classify(t.sparse_feat_vec)
 
 					# remember highest classification result:
 					if temp > arg_max[1]:
@@ -96,10 +96,10 @@ class posTagger(object):
 
                                 # adjust classifier weights for incorrectly predicted tag and gold tag:
 				if arg_max[0] != t.gold_pos:
-					classifiers[t.gold_pos].adjust_weights(expanded_feat_vec, True, 0.1)
-					classifiers[arg_max[0]].adjust_weights(expanded_feat_vec, False, 0.1)
-                                        #classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, 0.1)
-					#classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, 0.1)
+					#classifiers[t.gold_pos].adjust_weights(expanded_feat_vec, True, 0.1)
+					#classifiers[arg_max[0]].adjust_weights(expanded_feat_vec, False, 0.1)
+                                        classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, 0.1)
+					classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, 0.1)
 
                 # after training is completed, save classifier vectors (model) to file:
 		self.save(file_out, classifiers)
@@ -159,12 +159,12 @@ class posTagger(object):
                                 print "\t\t"+ str(ind) + "/" + str(len(tokens))
 
                         # expand sparse token feature vectors into all dimensions:
-			expanded_feat_vec = t.expandFeatVec(len(feat_vec))
+			#expanded_feat_vec = t.expandFeatVec(len(feat_vec))
 
 			arg_max = ["", 0.0]
 			for tag in classifiers:
-				temp = classifiers[tag].classify(expanded_feat_vec)
-                                #temp = classifiers[tag].classify(t.sparse_feat_vec)
+				#temp = classifiers[tag].classify(expanded_feat_vec)
+                                temp = classifiers[tag].classify(t.sparse_feat_vec)
 
 				# remember highest classification result:
 				if temp > arg_max[1]:
