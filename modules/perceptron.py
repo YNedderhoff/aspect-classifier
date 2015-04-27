@@ -7,10 +7,7 @@ class classifier(object):
         # classify a token according to its feature vector:
 	def classify(self, feat_vec):
 		#return sum([self.weight_vector[i]*float(feat_vec[i]) for i in range(len(feat_vec))])
-                #return sum([self.weight_vector[i] for i in feat_vec])
-                for i in feat_vec:
-                        print len(self.weight_vector)
-                        self.weight_vector[i] = -100
+                return sum([self.weight_vector[i] for i in feat_vec])
                 
         # adjust the weights upon incorrect prediction:
         #     prediction=True  -> this classifier should have tagged the token
