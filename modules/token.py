@@ -40,7 +40,7 @@ class Token(object):
 	def expandFeatVec(self, dimensions):
 		result = []
 		for i in range(dimensions):
-			if i in self.sparse_featvec:
+			if i in self.sparse_feat_vec:
 				result.append(1)
 			else:
 				result.append(0)
