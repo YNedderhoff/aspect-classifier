@@ -2,13 +2,13 @@ class classifier(object):
 	def __init__(self, tag, dimensions):
 		self.tag = tag
 		self.dimensions = dimensions
-		self.weight_vector = [0.0 for ind in range(dimensions)]
+		self.weight_vector = [0.5 for ind in range(dimensions)]
 
 
 
 	
 	def classify(self, feat_vec):
-		return sum([self.weight_vector[i]*float(feat_vec[i]) for i in len(feat_vec)])
+		return sum([self.weight_vector[i]*float(feat_vec[i]) for i in range(len(feat_vec))])
 
 
 
