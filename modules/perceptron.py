@@ -23,9 +23,9 @@ class classifier(object):
 ##                                                          step_size*float(feat_vec[ind])
                 if prediction:
 			for ind in feat_vec:
-				self.weight_vector[ind] = self.weight_vector[ind] +
+				self.weight_vector[ind] = self.weight_vector[ind] + \
                                                           step_size*1.0
 		else:
 			for ind in feat_vec:
-				self.weight_vector[ind] = self.weight_vector[ind] -
+				self.weight_vector[ind] = self.weight_vector[ind] - \
                                                           step_size*1.0
