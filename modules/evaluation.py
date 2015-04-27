@@ -94,19 +94,19 @@ def evaluate(file_in, out_file):
 	print "\tWrite evaluation results to file"
 	z0 = time.time()	
 	
-	print >> outfile, "Total Predictions:\t"+str(prediction_count)
-	print >> outfile, "Correct Predictions:\t"+str(correct_predictions)
-	print >> outfile, "False Predictions:\t"+str(false_tags)
-	print >> outfile, ""
-	print >> outfile, "Overall Accuracy:\t"+str(overall_accuracy)
-	print >> outfile, "Overall Precision:\t"+str(overall_precision)
-	print >> outfile, "Overall Recall:\t"+str(overall_recall)
-	print >> outfile, "Overall F-Score:\t"+str(overall_f_score)
-	print >> outfile, ""
+	print >> out_file, "Total Predictions:\t"+str(prediction_count)
+	print >> out_file, "Correct Predictions:\t"+str(correct_predictions)
+	print >> out_file, "False Predictions:\t"+str(false_tags)
+	print >> out_file, ""
+	print >> out_file, "Overall Accuracy:\t"+str(overall_accuracy)
+	print >> out_file, "Overall Precision:\t"+str(overall_precision)
+	print >> out_file, "Overall Recall:\t"+str(overall_recall)
+	print >> out_file, "Overall F-Score:\t"+str(overall_f_score)
+	print >> out_file, ""
 
-	print >> outfile, "Tagwise Accuracy, Precision, Recall and F-Score:\n"
+	print >> out_file, "Tagwise Accuracy, Precision, Recall and F-Score:\n"
 	for pos in unique_tags_scores.keys():
-		print >> outfile, pos+"\tAccuracy: "+str(unique_tags_scores[pos]['accuracy'])+"\tPrecision: "+ \
+		print >> out_file, pos+"\tAccuracy: "+str(unique_tags_scores[pos]['accuracy'])+"\tPrecision: "+ \
                                   str(unique_tags_scores[pos]['precision'])+"\tRecall: "+ \
                                   str(unique_tags_scores[pos]['recall'])+"\tF-Score: "+ \
                                   str(unique_tags_scores[pos]['f-score'])
