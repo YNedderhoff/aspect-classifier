@@ -56,7 +56,7 @@ class posTagger(object):
 						token.createFeatureVector(feat_vec, sentence[t_id],
                                                                           None, None)
 				elif t_id == len(sentence)-1: # last token of sentence
-					token.createFeatureVector(fea_tvec, sentence[t_id],
+					token.createFeatureVector(feat_vec, sentence[t_id],
                                                                   sentence[t_id-1], None)
 				else:
 					token.createFeatureVector(feat_vec, sentence[t_id],
