@@ -78,9 +78,10 @@ class posTagger(object):
 
                 # train the classifiers:
 		for i in range(max_iterations):
+			print "\t\tEpoch "+str(i+1)
 			for ind, t in enumerate(tokens):
-				if ind % 100 == 0:
-					print "\t\t"+ str(ind) + "/" + str(len(tokens))
+				if ind % (len(tokens)/10) == 0 and not ind == 0:
+					print "\t\t\t"+ str(ind) + "/" + str(len(tokens))
 
 				# expand sparse token feature vectors into all dimensions:
 				#expanded_feat_vec = t.expandFeatVec(len(feat_vec))
@@ -103,7 +104,7 @@ class posTagger(object):
 					classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, 0.1)
 
                 # after training is completed, save classifier vectors (model) to file:
-		self.save(file_out, classifiers)
+		self.save(file_out, [feat_vec, classifiers])
 
 		z1 = time.time()
 		print "\t\t"+str(z1-z0)+" sec."
@@ -111,22 +112,26 @@ class posTagger(object):
         # apply the classifiers to test data:
 	def test(self, file_in, mod, file_out):
 
-                # load classifier vectors (model) from file:
-		classifiers = self.load(mod)
+                # load classifier vectors (model) and feature vector from file:
 
-		print "\t Test file: "+file_in
-
-		print "\tExtracting features"
+		print "\tLoading the model and the features"
 		x0 = time.time()
-		feat_vec = self.extractFeatures(file_in)
+
+		model_list = self.load(mod)
+		feat_vec = model_list[0]
+		classifiers = model_list[1]
+
 		x1 = time.time()
-		print "\t"+str(len(feat_vec))+" features extracted"
+		print "\t"+str(len(feat_vec))+" features loaded"
 		print "\t\t"+str(x1-x0)+" sec."
+
+		print "\tTest file: "+file_in
 
 		print "\tCreating tokens with feature vectors"
 		y0 = time.time()
 		tokens = [] # save all instantiated tokens from training data, with finished feature vectors
 		tag_set = set() # gather all POS types
+		empty_feat_vec_count = 0
 		
 		# read in sentences from file and generates the corresponding token objects:
 		for sentence in tk.sentences(codecs.open(file_in,encoding='utf-8')):
@@ -148,7 +153,9 @@ class posTagger(object):
                                                                   sentence[t_id-1], sentence[t_id+1])
 				tokens.append(token)
 				tag_set.add(token.gold_pos)
+				if len(token.sparse_feat_vec) == 0: empty_feat_vec_count+=1
 
+		print "\t\t" + str(empty_feat_vec_count) + " tokens have no features of the feature set"
                 y1 = time.time()
 		print "\t\t"+str(y1-y0)+" sec."
 
@@ -156,7 +163,7 @@ class posTagger(object):
 		z0 = time.time()
 		output = open(file_out, "w") # temporarily save classification to file for evaluation
 		for ind, t in enumerate(tokens):
-			if ind % 100 == 0:
+			if ind % (len(tokens)/10) == 0 and not ind == 0:
                                 print "\t\t"+ str(ind) + "/" + str(len(tokens))
 
                         # expand sparse token feature vectors into all dimensions:
@@ -226,6 +233,7 @@ if __name__=='__main__':
 	mode.add_argument('-ev',dest='evaluate',action='store_true',help='run in evaluation mode')
 
 	argpar.add_argument('-i','--infile',dest='in_file',help='in file',required=True)
+	argpar.add_argument('-e','--epochs',dest='epochs',help='epochs',default='1')
 	argpar.add_argument('-m','--model',dest='model',help='model',default='model')
 	#argpar.add_argument('-g','--gold',dest='gold',help='gold',required=True)
 	#argpar.add_argument('-p','--prediction',dest='prediction',help='prediction',required=True)
@@ -240,7 +248,7 @@ if __name__=='__main__':
 		findAffixes(args.in_file, 5)
 	elif args.train:
 		print "Running in training mode\n"
-		t.train(args.in_file, args.model, 1)
+		t.train(args.in_file, args.model, int(args.epochs))
 	elif args.test:
 		print "Running in test mode\n"
 		t.test(args.in_file, args.model, args.output_file)

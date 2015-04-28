@@ -22,11 +22,13 @@ class Token(object):
 		self.sparse_feat_vec = []
 		
 		# the current token feature:
-		self.sparse_feat_vec.append(feat_vec["current_form_"+current_token.form])
+		if "current_form_"+current_token.form in feat_vec:
+			self.sparse_feat_vec.append(feat_vec["current_form_"+current_token.form])
 
 		# if applicable, the previous token feature:
 		if previous_token:
-                        self.sparse_feat_vec.append(feat_vec["prev_form_"+previous_token.form])
+			if "previous_form_"+previous_token.form in feat_vec:
+                        	self.sparse_feat_vec.append(feat_vec["prev_form_"+previous_token.form])
 
 		# token is the first word in sentence:
 		else:
@@ -34,7 +36,8 @@ class Token(object):
 
 		# if applicable, the next token feature:
 		if next_token:
-                        self.sparse_feat_vec.append(feat_vec["next_form_"+next_token.form])
+			if "next_form_"+next_token.form in feat_vec:
+                        	self.sparse_feat_vec.append(feat_vec["next_form_"+next_token.form])
 
         # expand sparse feature vectors into all dimensions (by adding 0s):
 	def expandFeatVec(self, dimensions):
