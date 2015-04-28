@@ -12,7 +12,7 @@
 run2.sh
 
 #the model
-model
+model*
 
 # the corpora
 *.col
