@@ -19,7 +19,7 @@ python tagger.py -test -i $CORPORA/dev.col -m model -o prediction.col
 #python tagger.py -test -i $CORPORA/dev_top5000.col -m model -o prediction.col
 
 # Evaluate the results
-python tagger.py -ev -i predicted.col -o evaluation.txt
+python tagger.py -ev -i prediction.col -o evaluation.txt
 
 rm $CORPORA/train_top5000.col
 rm $CORPORA/dev_top5000.col

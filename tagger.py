@@ -2,6 +2,7 @@ import codecs
 import time
 import cPickle
 import gzip
+import random
 
 import modules.token as tk
 import modules.perceptron as perceptron
@@ -102,6 +103,9 @@ class posTagger(object):
 					#classifiers[arg_max[0]].adjust_weights(expanded_feat_vec, False, 0.1)
                                         classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, 0.1)
 					classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, 0.1)
+
+			# shuffle tokens
+			random.shuffle(tokens)
 
                 # after training is completed, save classifier vectors (model) to file:
 		self.save(file_out, [feat_vec, classifiers])
