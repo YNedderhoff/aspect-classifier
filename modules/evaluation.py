@@ -47,26 +47,26 @@ def evaluate(file_in, out_file):
 		if unique_tags[pos]['TP']+unique_tags[pos]['FP'] == 0:
 			unique_tags_scores[pos]['precision'] = 0.00
 		else:
-			unique_tags_scores[pos]['precision']=round((float(unique_tags[pos]['TP']))/(float(unique_tags[pos]['TP'])+ \
-                                                                                                    float(unique_tags[pos]['FP']))*100.00, 2)
+			unique_tags_scores[pos]['precision']=(float(unique_tags[pos]['TP']))/(float(unique_tags[pos]['TP'])+ \
+                                                                                                    float(unique_tags[pos]['FP']))*100.00
 
 		if unique_tags[pos]['TP']+unique_tags[pos]['FN'] == 0:
 			unique_tags_scores[pos]['recall'] = 0.00
-		else: unique_tags_scores[pos]['recall']=round((float(unique_tags[pos]['TP']))/(float(unique_tags[pos]['TP'])+ \
-                                                                                               float(unique_tags[pos]['FN']))*100.00, 2)
+		else: unique_tags_scores[pos]['recall']=(float(unique_tags[pos]['TP']))/(float(unique_tags[pos]['TP'])+ \
+                                                                                               float(unique_tags[pos]['FN']))*100.00
 
 		if unique_tags[pos]['TP']+unique_tags[pos]['FP']+unique_tags[pos]['FN'] == 0:
 			unique_tags_scores[pos]['accuracy'] = 0.00
-		else: unique_tags_scores[pos]['accuracy']=round(float(unique_tags[pos]['TP'])/(float(unique_tags[pos]['TP'])+ \
+		else: unique_tags_scores[pos]['accuracy']=float(unique_tags[pos]['TP'])/(float(unique_tags[pos]['TP'])+ \
                                                                                                float(unique_tags[pos]['FN'])+ \
-                                                                                               float(unique_tags[pos]['FP']))*100.00, 2)
+                                                                                               float(unique_tags[pos]['FP']))*100.00
 
 		if unique_tags_scores[pos]['precision']+unique_tags_scores[pos]['recall'] == 0.00:
 			unique_tags_scores[pos]['f-score'] = 0.00
-		else: unique_tags_scores[pos]['f-score'] = round((2*float(unique_tags_scores[pos]['precision'])* \
+		else: unique_tags_scores[pos]['f-score'] = (2*float(unique_tags_scores[pos]['precision'])* \
                                                                   float(unique_tags_scores[pos]['recall']))/ \
                                                                  (float(unique_tags_scores[pos]['precision'])+ \
-                                                                  float(unique_tags_scores[pos]['recall'])), 2)
+                                                                  float(unique_tags_scores[pos]['recall']))
 	
 
         # computes overall values, then writes results to file:
@@ -98,18 +98,18 @@ def evaluate(file_in, out_file):
 	print >> out_file, "Correct Predictions:\t"+str(correct_predictions)
 	print >> out_file, "False Predictions:\t"+str(false_tags)
 	print >> out_file, ""
-	print >> out_file, "Overall Accuracy:\t"+str(overall_accuracy)
-	print >> out_file, "Overall Precision:\t"+str(overall_precision)
-	print >> out_file, "Overall Recall:\t"+str(overall_recall)
-	print >> out_file, "Overall F-Score:\t"+str(overall_f_score)
+	print >> out_file, "Overall Accuracy:\t"+str(round(overall_accuracy, 2))
+	print >> out_file, "Overall Precision:\t"+str(round(overall_precision, 2))
+	print >> out_file, "Overall Recall:\t"+str(round(overall_recall, 2))
+	print >> out_file, "Overall F-Score:\t"+str(round(overall_f_score, 2))
 	print >> out_file, ""
 
 	print >> out_file, "Tagwise Accuracy, Precision, Recall and F-Score:\n"
 	for pos in unique_tags_scores.keys():
-		print >> out_file, pos+"\tAccuracy: "+str(unique_tags_scores[pos]['accuracy'])+"\tPrecision: "+ \
-                                  str(unique_tags_scores[pos]['precision'])+"\tRecall: "+ \
-                                  str(unique_tags_scores[pos]['recall'])+"\tF-Score: "+ \
-                                  str(unique_tags_scores[pos]['f-score'])
+		print >> out_file, pos+"\tAccuracy: "+str(round(unique_tags_scores[pos]['accuracy'], 2))+"\tPrecision: "+ \
+                                  str(round(unique_tags_scores[pos]['precision'], 2))+"\tRecall: "+ \
+                                  str(round(unique_tags_scores[pos]['recall'], 2))+"\tF-Score: "+ \
+                                  str(round(unique_tags_scores[pos]['f-score'], 2))
 	
 	z1 = time.time()
 	print "\t\t"+str(z1-z0)+" sec."

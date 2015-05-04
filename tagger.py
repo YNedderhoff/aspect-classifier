@@ -50,17 +50,17 @@ class posTagger(object):
                         # create sparse feature vector representation for each token:
 			for t_id, token in enumerate(sentence):
 				if t_id == 0: # first token of sentence
-					try:
-						token.createFeatureVector(feat_vec, sentence[t_id],
+					if len(sentence) > 1:
+						token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                                                           None, sentence[t_id+1])
-					except IndexError: # happens if sentence length is 1
-						token.createFeatureVector(feat_vec, sentence[t_id],
+					elif len(sentence) == 1:
+						token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                                                           None, None)
 				elif t_id == len(sentence)-1: # last token of sentence
-					token.createFeatureVector(feat_vec, sentence[t_id],
+					token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                                                   sentence[t_id-1], None)
 				else:
-					token.createFeatureVector(feat_vec, sentence[t_id],
+					token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                                                   sentence[t_id-1], sentence[t_id+1])
 				tokens.append(token)
 				tag_set.add(token.gold_pos)
@@ -140,16 +140,16 @@ class posTagger(object):
 			for t_id, token in enumerate(sentence):
 				if t_id == 0: # first token of sentence
 					try:
-						token.createFeatureVector(feat_vec, sentence[t_id],
+						token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                                                           None, sentence[t_id+1])
 					except IndexError: # happens if sentence length is 1
-						token.createFeatureVector(feat_vec, sentence[t_id],
+						token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                                                           None, None)
 				elif t_id == len(sentence)-1: # last token of sentence
-					token.createFeatureVector(feat_vec, sentence[t_id],
+					token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                                                   sentence[t_id-1], None)
 				else:
-					token.createFeatureVector(feat_vec, sentence[t_id],
+					token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                                                   sentence[t_id-1], sentence[t_id+1])
 				tokens.append(token)
 				tag_set.add(token.gold_pos)
@@ -194,13 +194,44 @@ class posTagger(object):
 	def extractFeatures(self, file_in):
 
 		feat_vec = {}
-		feat_vec["initial_token"] = len(feat_vec)
+
+		# caps
+		feat_vec["CAPS"] = len(feat_vec)
+
+		# suffixes
+		### length 2
+
+		feat_vec["suffix_"+"er"] = len(feat_vec)
+		feat_vec["suffix_"+"es"] = len(feat_vec)
+		feat_vec["suffix_"+"ed"] = len(feat_vec)
+		feat_vec["suffix_"+"on"] = len(feat_vec)
+		feat_vec["suffix_"+"ts"] = len(feat_vec)
+
+		### length 3
+
+		feat_vec["suffix_"+"ing"] = len(feat_vec)
+		feat_vec["suffix_"+"ion"] = len(feat_vec)
+		feat_vec["suffix_"+"ers"] = len(feat_vec)
+		feat_vec["suffix_"+"ate"] = len(feat_vec)
+
+		### length 4
+
+		feat_vec["suffix_"+"ment"] = len(feat_vec)
+		feat_vec["suffix_"+"ions"] = len(feat_vec)
+		feat_vec["suffix_"+"tion"] = len(feat_vec)
+		feat_vec["suffix_"+"lion"] = len(feat_vec)
+		feat_vec["suffix_"+"ould"] = len(feat_vec)
+
+		### length 5
+
+		feat_vec["suffix_"+"llion"] = len(feat_vec)
+
 
                 # iterate over all tokens to extract features:
 		for sentence in tk.sentences(codecs.open(file_in,encoding='utf-8')):                      
-			for token in sentence:
+			for tid, token in enumerate(sentence):
 
-				# POS features:
+				# POS:
 				"""
 				if not "prev_pos_"+str(token.gold_pos) in feat_vec:
                                         feat_vec["prev_pos_"+str(token.gold_pos)] = len(feat_vec.keys())
@@ -208,13 +239,28 @@ class posTagger(object):
                                         feat_vec["prev_pos_"+str(token.predicted_pos)] = len(feat_vec.keys())
 				"""
 				
-				# form features:
+				# form:
 				if not "current_form_"+token.form in feat_vec:
                                         feat_vec["current_form_"+token.form] = len(feat_vec)
 				if not "prev_form_"+token.form in feat_vec:
                                         feat_vec["prev_form_"+token.form] = len(feat_vec)
 				if not "next_form_"+token.form in feat_vec:
                                         feat_vec["next_form_"+token.form] = len(feat_vec)
+
+				# form length
+				if not "current_form_len_"+str(len(token.form)) in feat_vec:
+                                        feat_vec["current_form_len_"+str(len(token.form))] = len(feat_vec)
+				if not "prev_form_len_"+str(len(token.form)) in feat_vec:
+                                        feat_vec["prev_form_len_"+str(len(token.form))] = len(feat_vec)
+				if not "next_form_len_"+str(len(token.form)) in feat_vec:
+                                        feat_vec["next_form_len_"+str(len(token.form))] = len(feat_vec)
+				
+
+				# position in sentence
+				if not "position_in_sentence_"+str(tid) in feat_vec:
+					feat_vec["position_in_sentence_"+str(tid)] = len(feat_vec)
+
+
 
 		return feat_vec
 
@@ -245,7 +291,7 @@ if __name__=='__main__':
 	if args.features:
 		print "Running in feature mode\n"
 		# find the most frequent prefixes and affixes:
-		findAffixes(args.in_file, 5)
+		findAffixes(args.in_file, 10)
 	elif args.train:
 		print "Running in training mode\n"
 		t.train(args.in_file, args.model, int(args.epochs))

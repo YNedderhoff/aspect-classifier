@@ -18,26 +18,73 @@ class Token(object):
 		else: print "\tInput file not in expected format: Not enough columns"
 
         # create the sparse feature vector for this token (addin only applicable features):
-	def createFeatureVector(self, feat_vec, current_token, previous_token, next_token):
+	def createFeatureVector(self, feat_vec, t_id, current_token, previous_token, next_token):
 		self.sparse_feat_vec = []
+
+		### CAPS
 		
-		# the current token feature:
+		if current_token.form.isupper():
+			self.sparse_feat_vec.append(feat_vec["CAPS"])
+		
+		### form
+ 
+		# the current form:
 		if "current_form_"+current_token.form in feat_vec:
 			self.sparse_feat_vec.append(feat_vec["current_form_"+current_token.form])
 
-		# if applicable, the previous token feature:
+		# if applicable, the previous form:
 		if previous_token:
 			if "previous_form_"+previous_token.form in feat_vec:
                         	self.sparse_feat_vec.append(feat_vec["prev_form_"+previous_token.form])
 
-		# token is the first word in sentence:
-		else:
-                        self.sparse_feat_vec.append(feat_vec["initial_token"])
-
-		# if applicable, the next token feature:
+		# if applicable, the next token form:
 		if next_token:
 			if "next_form_"+next_token.form in feat_vec:
                         	self.sparse_feat_vec.append(feat_vec["next_form_"+next_token.form])
+
+
+		### form length
+
+		# the current form length:
+		if "current_form_len_"+str(len(current_token.form)) in feat_vec:
+			self.sparse_feat_vec.append(feat_vec["current_form_len_"+str(len(current_token.form))])
+
+		# if applicable, the previous form length:
+		if previous_token:
+			if "previous_form_len_"+str(len(previous_token.form)) in feat_vec:
+                        	self.sparse_feat_vec.append(feat_vec["previous_form_len_"+str(len(previous_token.form))])
+
+		# if applicable, the next token form length:
+		if next_token:
+			if "next_form_len_"+str(len(next_token.form)) in feat_vec:
+                        	self.sparse_feat_vec.append(feat_vec["next_form_len_"+str(len(next_token.form))])
+
+		
+		### position in sentence
+
+		if "position_in_sentence_"+str(t_id) in feat_vec:
+			self.sparse_feat_vec.append(feat_vec["position_in_sentence_"+str(t_id)])
+		### suffixes
+
+		# length 2
+
+		if "suffix_"+current_token.form[-2:] in feat_vec:
+			self.sparse_feat_vec.append(feat_vec["suffix_"+current_token.form[-2:]])
+
+		# length 3
+
+		if "suffix_"+current_token.form[-3:] in feat_vec:
+			self.sparse_feat_vec.append(feat_vec["suffix_"+current_token.form[-3:]])
+
+		# length 4
+
+		if "suffix_"+current_token.form[-4:] in feat_vec:
+			self.sparse_feat_vec.append(feat_vec["suffix_"+current_token.form[-4:]])
+
+		# length 5
+
+		if "suffix_"+current_token.form[-5:] in feat_vec:
+			self.sparse_feat_vec.append(feat_vec["suffix_"+current_token.form[-5:]])
 
         # expand sparse feature vectors into all dimensions (by adding 0s):
 	def expandFeatVec(self, dimensions):
