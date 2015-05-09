@@ -9,7 +9,7 @@ import modules.token as tk
 import modules.perceptron as perceptron
 
 from modules.evaluation import evaluate
-from modules.affixes import findAffixes
+from modules.affixes import find_affixes
 
 class posTagger(object):
     def __init__(self):
@@ -82,11 +82,10 @@ class posTagger(object):
 
         alpha = 0.1 # smoothes the effect of adjustments
         alpha_decreases = 5 # number of decreases of alpha during training
-        root = int(round(max_iterations ** 1/alpha_decreases, 0)) # the decreases-th root of max_iterations
 
-        for i in range(max_iterations):
+        for i in range(1, max_iterations+1):
 
-            print "\t\tEpoch " + str(i + 1) + ", alpha = " + str(alpha)
+            print "\t\tEpoch " + str(i) + ", alpha = " + str(alpha)
             for ind, t in enumerate(tokens):
                 if ind % (len(tokens) / 10) == 0 and not ind == 0:
                     print "\t\t\t" + str(ind) + "/" + str(len(tokens))
@@ -107,15 +106,16 @@ class posTagger(object):
                 # adjust classifier weights for incorrectly predicted tag and gold tag:
                 if arg_max[0] != t.gold_pos:
 
-                    # classifiers[t.gold_pos].adjust_weights(expanded_feat_vec, True, 0.1)
-                    # classifiers[arg_max[0]].adjust_weights(expanded_feat_vec, False, 0.1)
-
                     classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha)
                     classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha)
 
             # decrease alpha
-            if (i+1) % root == 0:
-                alpha = alpha/2
+            if i % int(round(max_iterations ** 1/alpha_decreases)) == 0:
+
+                # int(round(max_iterations ** 1/alpha_decreases)) is the number x, for which
+                # i % x == 0 is True exactly alpha_decreases times
+
+                alpha /= 2
 
             # shuffle tokens
             random.shuffle(tokens)
@@ -217,7 +217,7 @@ class posTagger(object):
 
         # suffixes
 
-        ### length 2
+        # ### length 2
 
         feat_vec["suffix_" + "er"] = len(feat_vec)
         feat_vec["suffix_" + "es"] = len(feat_vec)
@@ -225,14 +225,14 @@ class posTagger(object):
         feat_vec["suffix_" + "on"] = len(feat_vec)
         feat_vec["suffix_" + "ts"] = len(feat_vec)
 
-        ### length 3
+        # ### length 3
 
         feat_vec["suffix_" + "ing"] = len(feat_vec)
         feat_vec["suffix_" + "ion"] = len(feat_vec)
         feat_vec["suffix_" + "ers"] = len(feat_vec)
         feat_vec["suffix_" + "ate"] = len(feat_vec)
 
-        ### length 4
+        # ### length 4
 
         feat_vec["suffix_" + "ment"] = len(feat_vec)
         feat_vec["suffix_" + "ions"] = len(feat_vec)
@@ -240,7 +240,7 @@ class posTagger(object):
         feat_vec["suffix_" + "lion"] = len(feat_vec)
         feat_vec["suffix_" + "ould"] = len(feat_vec)
 
-        ### length 5
+        # ### length 5
 
         feat_vec["suffix_" + "llion"] = len(feat_vec)
 
@@ -309,7 +309,7 @@ if __name__ == '__main__':
         if args.features:
             print "Running in feature mode\n"
             # find the most frequent prefixes and affixes:
-            findAffixes(args.in_file, 10)
+            find_affixes(args.in_file, 10)
         elif args.train:
             print "Running in training mode\n"
             t.train(args.in_file, args.model, int(args.epochs))
@@ -324,5 +324,3 @@ if __name__ == '__main__':
 
     t1 = time.time()
     print "\n\tDone. Total time: " + str(t1 - t0) + "sec.\n"
-
-
