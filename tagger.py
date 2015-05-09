@@ -79,18 +79,24 @@ class posTagger(object):
             classifiers[tag] = perceptron.classifier(len(feat_vec))
 
         # train the classifiers:
+
+        alpha = 0.1 # smoothes the effect of adjustments
+        alpha_decreases = 5 # number of decreases of alpha during training
+        root = int(round(max_iterations ** 1/alpha_decreases, 0)) # the decreases-th root of max_iterations
+
         for i in range(max_iterations):
-            print "\t\tEpoch " + str(i + 1)
+
+            print "\t\tEpoch " + str(i + 1) + ", alpha = " + str(alpha)
             for ind, t in enumerate(tokens):
                 if ind % (len(tokens) / 10) == 0 and not ind == 0:
                     print "\t\t\t" + str(ind) + "/" + str(len(tokens))
 
                 # expand sparse token feature vectors into all dimensions:
-                #expanded_feat_vec = t.expandFeatVec(len(feat_vec))
+                # expanded_feat_vec = t.expandFeatVec(len(feat_vec))
 
                 arg_max = ["", 0.0]
                 for tag in classifiers:
-                    #temp = classifiers[tag].classify(expanded_feat_vec)
+                    # temp = classifiers[tag].classify(expanded_feat_vec)
                     temp = classifiers[tag].classify(t.sparse_feat_vec)
 
                     # remember highest classification result:
@@ -100,10 +106,16 @@ class posTagger(object):
 
                 # adjust classifier weights for incorrectly predicted tag and gold tag:
                 if arg_max[0] != t.gold_pos:
-                    #classifiers[t.gold_pos].adjust_weights(expanded_feat_vec, True, 0.1)
-                    #classifiers[arg_max[0]].adjust_weights(expanded_feat_vec, False, 0.1)
-                    classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, 0.1)
-                    classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, 0.1)
+
+                    # classifiers[t.gold_pos].adjust_weights(expanded_feat_vec, True, 0.1)
+                    # classifiers[arg_max[0]].adjust_weights(expanded_feat_vec, False, 0.1)
+
+                    classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha)
+                    classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha)
+
+            # decrease alpha
+            if (i+1) % root == 0:
+                alpha = alpha/2
 
             # shuffle tokens
             random.shuffle(tokens)
@@ -172,11 +184,11 @@ class posTagger(object):
                 print "\t\t" + str(ind) + "/" + str(len(tokens))
 
             # expand sparse token feature vectors into all dimensions:
-            #expanded_feat_vec = t.expandFeatVec(len(feat_vec))
+            # expanded_feat_vec = t.expandFeatVec(len(feat_vec))
 
             arg_max = ["", 0.0]
             for tag in classifiers:
-                #temp = classifiers[tag].classify(expanded_feat_vec)
+                # temp = classifiers[tag].classify(expanded_feat_vec)
                 temp = classifiers[tag].classify(t.sparse_feat_vec)
 
                 # remember highest classification result:
@@ -232,18 +244,18 @@ class posTagger(object):
 
         feat_vec["suffix_" + "llion"] = len(feat_vec)
 
-
         # iterate over all tokens to extract features:
+
         for sentence in tk.sentences(codecs.open(file_in, encoding='utf-8')):
             for tid, token in enumerate(sentence):
 
                 # POS:
                 """
-				if not "prev_pos_"+str(token.gold_pos) in feat_vec:
+                if not "prev_pos_"+str(token.gold_pos) in feat_vec:
                                         feat_vec["prev_pos_"+str(token.gold_pos)] = len(feat_vec.keys())
-				if not "prev_pos_"+str(token.predicted_pos) in feat_vec:
+                if not "prev_pos_"+str(token.predicted_pos) in feat_vec:
                                         feat_vec["prev_pos_"+str(token.predicted_pos)] = len(feat_vec.keys())
-				"""
+                """
 
                 # form:
                 if not "current_form_" + token.form in feat_vec:
@@ -260,7 +272,6 @@ class posTagger(object):
                     feat_vec["prev_form_len_" + str(len(token.form))] = len(feat_vec)
                 if not "next_form_len_" + str(len(token.form)) in feat_vec:
                     feat_vec["next_form_len_" + str(len(token.form))] = len(feat_vec)
-
 
                 # position in sentence
                 if not "position_in_sentence_" + str(tid) in feat_vec:
