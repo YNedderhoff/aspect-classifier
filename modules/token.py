@@ -1,3 +1,4 @@
+
 class Token(object):
 
         # initialize token from a line in file:

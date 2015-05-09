@@ -3,13 +3,13 @@ import time
 import cPickle
 import gzip
 import random
+import os
 
 import modules.token as tk
 import modules.perceptron as perceptron
 
 from modules.evaluation import evaluate
 from modules.affixes import findAffixes
-
 
 class posTagger(object):
     def __init__(self):
@@ -204,6 +204,7 @@ class posTagger(object):
         feat_vec["CAPS"] = len(feat_vec)
 
         # suffixes
+
         ### length 2
 
         feat_vec["suffix_" + "er"] = len(feat_vec)
@@ -286,27 +287,29 @@ if __name__ == '__main__':
     argpar.add_argument('-e', '--epochs', dest='epochs', help='epochs', default='1')
     argpar.add_argument('-m', '--model', dest='model', help='model', default='model')
     # argpar.add_argument('-g','--gold',dest='gold',help='gold',required=True)
-    #argpar.add_argument('-p','--prediction',dest='prediction',help='prediction',required=True)
+    # argpar.add_argument('-p','--prediction',dest='prediction',help='prediction',required=True)
     argpar.add_argument('-o', '--output', dest='output_file', help='output file', default='output.txt')
     args = argpar.parse_args()
 
     t = posTagger()
-
-    if args.features:
-        print "Running in feature mode\n"
-        # find the most frequent prefixes and affixes:
-        findAffixes(args.in_file, 10)
-    elif args.train:
-        print "Running in training mode\n"
-        t.train(args.in_file, args.model, int(args.epochs))
-    elif args.test:
-        print "Running in test mode\n"
-        t.test(args.in_file, args.model, args.output_file)
-    elif args.evaluate:
-        print "Running in evaluation mode\n"
-        out_stream = open(args.output_file, 'w')
-        evaluate(args.in_file, out_stream)
-        out_stream.close()
+    if os.stat(args.in_file).st_size == 0:
+        print "Input file is empty"
+    else:
+        if args.features:
+            print "Running in feature mode\n"
+            # find the most frequent prefixes and affixes:
+            findAffixes(args.in_file, 10)
+        elif args.train:
+            print "Running in training mode\n"
+            t.train(args.in_file, args.model, int(args.epochs))
+        elif args.test:
+            print "Running in test mode\n"
+            t.test(args.in_file, args.model, args.output_file)
+        elif args.evaluate:
+            print "Running in evaluation mode\n"
+            out_stream = open(args.output_file, 'w')
+            evaluate(args.in_file, out_stream)
+            out_stream.close()
 
     t1 = time.time()
     print "\n\tDone. Total time: " + str(t1 - t0) + "sec.\n"
