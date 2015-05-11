@@ -21,6 +21,7 @@ class Token(object):
 
     # create the sparse feature vector for this token (addin only applicable features):
     def createFeatureVector(self, feat_vec, t_id, current_token, previous_token, next_token):
+
         self.sparse_feat_vec = []
 
         # CAPS

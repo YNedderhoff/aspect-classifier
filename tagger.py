@@ -11,6 +11,7 @@ import modules.perceptron as perceptron
 from modules.evaluation import evaluate
 from modules.affixes import find_affixes
 
+
 class posTagger(object):
     def __init__(self):
 
@@ -22,7 +23,7 @@ class posTagger(object):
         cPickle.dump(model, stream)
         stream.close()
 
-        # load the model (weight vectors) from a file:
+    # load the model (weight vectors) from a file:
 
     def load(self, file_name):
         stream = gzip.open(file_name, "rb")
@@ -80,10 +81,13 @@ class posTagger(object):
 
         # train the classifiers:
 
-        alpha = 0.1 # smoothes the effect of adjustments
-        alpha_decreases = 5 # number of decreases of alpha during training
+        alpha = 0.1  # smoothes the effect of adjustments
 
-        for i in range(1, max_iterations+1):
+        # number of decreases of alpha during training
+        # works only only exactly if max_iterations is divisible by alpha_decreases
+        alpha_decreases = 5
+
+        for i in range(1, max_iterations + 1):
 
             print "\t\tEpoch " + str(i) + ", alpha = " + str(alpha)
             for ind, t in enumerate(tokens):
@@ -105,13 +109,11 @@ class posTagger(object):
 
                 # adjust classifier weights for incorrectly predicted tag and gold tag:
                 if arg_max[0] != t.gold_pos:
-
                     classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha)
                     classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha)
 
             # decrease alpha
-            if i % int(round(max_iterations ** 1/alpha_decreases)) == 0:
-
+            if i % int(round(max_iterations ** 1.0 / float(alpha_decreases))) == 0:
                 # int(round(max_iterations ** 1/alpha_decreases)) is the number x, for which
                 # i % x == 0 is True exactly alpha_decreases times
 

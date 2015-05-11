@@ -2,6 +2,8 @@ import codecs
 import time
 import token as tk
 
+from math import log
+
 
 def reverse(dictionary):
     new_dict = {}
@@ -31,7 +33,7 @@ def find_affixes(file_in, len_list):
 
     # after the following loop, every dictionary in both lists contains all affixes
     # that fit in that list as a key, and the respective frequency as it's value:
-    for sentence in tk.sentences(codecs.open(file_in,encoding='utf-8')):
+    for sentence in tk.sentences(codecs.open(file_in, encoding='utf-8')):
         for token in sentence:
             for i in top_x: # for every desired affix length
                 if len(token.form) > i: # word must be longer than suffix length
