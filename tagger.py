@@ -311,7 +311,7 @@ if __name__ == '__main__':
         if args.features:
             print "Running in feature mode\n"
             # find the most frequent prefixes and affixes:
-            find_affixes(args.in_file, 10)
+            find_affixes(args.in_file, 5)
         elif args.train:
             print "Running in training mode\n"
             t.train(args.in_file, args.model, int(args.epochs))
