@@ -7,6 +7,7 @@ import os
 
 import modules.token as tk
 import modules.perceptron as perceptron
+import modules.lmi as lmi
 
 from modules.evaluation import evaluate
 from modules.affixes import find_affixes
@@ -54,15 +55,19 @@ class posTagger(object):
             for t_id, token in enumerate(sentence):
                 if t_id == 0:  # first token of sentence
                     if len(sentence) > 1:
+                        token.set_adjacent_tokens(None, sentence[t_id + 1])
                         token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                                   None, sentence[t_id + 1])
                     elif len(sentence) == 1:
+                        token.set_adjacent_tokens(None, None)
                         token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                                   None, None)
                 elif t_id == len(sentence) - 1:  # last token of sentence
+                    token.set_adjacent_tokens(sentence[t_id - 1], None)
                     token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                               sentence[t_id - 1], None)
                 else:
+                    token.set_adjacent_tokens(sentence[t_id - 1], sentence[t_id + 1])
                     token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                               sentence[t_id - 1], sentence[t_id + 1])
                 tokens.append(token)
@@ -78,6 +83,8 @@ class posTagger(object):
         # instantiate a classifier for each pos tag type:
         for tag in tag_set:
             classifiers[tag] = perceptron.classifier(len(feat_vec))
+
+        lmi(tokens, feat_vec)
 
         # train the classifiers:
 
@@ -214,40 +221,24 @@ class posTagger(object):
 
         feat_vec = {}
 
+        affixes = find_affixes(file_in, 5)
+
         # uppercase
         feat_vec["uppercase"] = len(feat_vec)
 
         # capitalized
-        #feat_vec["capitalized"] = len(feat_vec)
+        feat_vec["capitalized"] = len(feat_vec)
 
-        # suffixes
-
-        # ### length 2
-
-        feat_vec["suffix_" + "er"] = len(feat_vec)
-        feat_vec["suffix_" + "es"] = len(feat_vec)
-        feat_vec["suffix_" + "ed"] = len(feat_vec)
-        feat_vec["suffix_" + "on"] = len(feat_vec)
-        feat_vec["suffix_" + "ts"] = len(feat_vec)
-
-        # ### length 3
-
-        feat_vec["suffix_" + "ing"] = len(feat_vec)
-        feat_vec["suffix_" + "ion"] = len(feat_vec)
-        feat_vec["suffix_" + "ers"] = len(feat_vec)
-        feat_vec["suffix_" + "ate"] = len(feat_vec)
-
-        # ### length 4
-
-        feat_vec["suffix_" + "ment"] = len(feat_vec)
-        feat_vec["suffix_" + "ions"] = len(feat_vec)
-        feat_vec["suffix_" + "tion"] = len(feat_vec)
-        feat_vec["suffix_" + "lion"] = len(feat_vec)
-        feat_vec["suffix_" + "ould"] = len(feat_vec)
-
-        # ### length 5
-
-        feat_vec["suffix_" + "llion"] = len(feat_vec)
+        for l in affixes:
+            for affix_length in l:
+                for affix in l[affix_length]:
+                    if sum(l[affix_length][affix].values()) > 500:
+                        if affixes.index(l) == 0:
+                            feat_vec["suffix_" + affix] = len(feat_vec)
+                        elif affixes.index(l) == 1:
+                            feat_vec["prefix_" + affix] = len(feat_vec)
+                        else:
+                            feat_vec["lettercombs_" + affix] = len(feat_vec)
 
         # iterate over all tokens to extract features:
 
@@ -261,7 +252,6 @@ class posTagger(object):
                 if not "prev_pos_"+str(token.predicted_pos) in feat_vec:
                                         feat_vec["prev_pos_"+str(token.predicted_pos)] = len(feat_vec.keys())
                 """
-
                 # form:
                 if not "current_form_" + token.form in feat_vec:
                     feat_vec["current_form_" + token.form] = len(feat_vec)

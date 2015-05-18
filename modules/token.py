@@ -4,7 +4,9 @@ class Token(object):
     def __init__(self, line):
 
         self.sparse_feat_vec = []
-
+        self.top_x = [2, 3, 4, 5]
+        self.next_token = None
+        self.previous_token = None
         # splits line tab-wise, writes the values in parameters:
         entries = line.split('\t')
         if len(entries) == 2:
@@ -21,6 +23,13 @@ class Token(object):
         else:
             print "\tInput file not in expected format: Not enough columns"
 
+    def set_adjacent_tokens(self, previous_token, next_token):
+
+        if previous_token:
+            self.previous_token = previous_token
+        if next_token:
+            self.next_token = next_token
+
     # create the sparse feature vector for this token (addin only applicable features):
     def createFeatureVector(self, feat_vec, t_id, current_token, previous_token, next_token):
 
@@ -29,16 +38,15 @@ class Token(object):
         if current_token.form.isupper():
             self.sparse_feat_vec.append(feat_vec["uppercase"])
 
-        """
+
         if current_token.form[0].isupper():
             upper_char = False
             for char in current_token.form[1:]:
                 if char.isupper():
                     upper_char = True
             if not upper_char:
-                print current_token.form
                 self.sparse_feat_vec.append(feat_vec["capitalized"])
-        """
+
 
         # form
 
@@ -76,27 +84,21 @@ class Token(object):
 
         if "position_in_sentence_" + str(t_id) in feat_vec:
             self.sparse_feat_vec.append(feat_vec["position_in_sentence_" + str(t_id)])
-        # suffixes
+            
+        for i in self.top_x:
+            if "prefix_" + current_token.form[:i] in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["prefix_" + current_token.form[:i]])
+            if "suffix_" + current_token.form[-i:] in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["suffix_" + current_token.form[-i:]])
 
-        # length 2
+            if len(current_token.form) > i+1 and i > 2:
 
-        if "suffix_" + current_token.form[-2:] in feat_vec:
-            self.sparse_feat_vec.append(feat_vec["suffix_" + current_token.form[-2:]])
+                # letter combinations in the word
+                # if they don't overlap with pre- or suffixes
+                for j in range(i, len(current_token.form)-(i*2-1)):
+                    if "lettercombs_" + current_token.form[j:j+i] in feat_vec:
+                        self.sparse_feat_vec.append(feat_vec["lettercombs_" + current_token.form[j:j+i]])
 
-        # length 3
-
-        if "suffix_" + current_token.form[-3:] in feat_vec:
-            self.sparse_feat_vec.append(feat_vec["suffix_" + current_token.form[-3:]])
-
-        # length 4
-
-        if "suffix_" + current_token.form[-4:] in feat_vec:
-            self.sparse_feat_vec.append(feat_vec["suffix_" + current_token.form[-4:]])
-
-        # length 5
-
-        if "suffix_" + current_token.form[-5:] in feat_vec:
-            self.sparse_feat_vec.append(feat_vec["suffix_" + current_token.form[-5:]])
 
     # expand sparse feature vectors into all dimensions (by adding 0s):
     def expandFeatVec(self, dimensions):

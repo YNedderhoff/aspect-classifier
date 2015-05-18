@@ -85,7 +85,8 @@ def find_affixes(file_in, len_list):
 
     t1 = time.time()
     print "\t\t"+str(t1-t0)+" sec."
-
+    return [suffixes, prefixes, letter_combs]
+    """
     print "\tComputing top prefixes and suffixes"
     t0 = time.time()
 
@@ -105,7 +106,7 @@ def find_affixes(file_in, len_list):
 
                     results_with_pmi = []
                     for tuple in results:
-                        results_with_pmi.append(tuple + (round(log(float(tuple[1])/(float(sum(l[x][elem[0]].values()))*float(pos_tags[tuple[0]])), 2), 2),))
+                        results_with_pmi.append(tuple + (round(float(tuple[1])*log(float(tuple[1])/(float(sum(l[x][elem[0]].values()))*float(pos_tags[tuple[0]])), 2), 2),))
                     # results_with_pmi is the same list as result, but with the pointwise mutual information added to every tuple
 
                     #d[suffix1][pos_tag1]/(sum(d[suffix1].values()*sum[d[x][pos_tag1] for all x in d if pos_tag1 in d[x]]))
@@ -113,3 +114,4 @@ def find_affixes(file_in, len_list):
                     print "\t\t\t\t"+elem[0]+"\t"+str(results_with_pmi)
     t1 = time.time()
     print "\t\t"+str(t1-t0)+" sec."
+    """
