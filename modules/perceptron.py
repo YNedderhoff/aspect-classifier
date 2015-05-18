@@ -14,7 +14,7 @@ class classifier(object):
     def adjust_weights(self, feat_vec, prediction, step_size):
         if prediction:
             for ind in feat_vec:
-                self.weight_vector[ind] += step_size * 1.0
+                self.weight_vector[ind] = self.weight_vector[ind] + (step_size * 1.0)
             else:
                 for ind in feat_vec:
-                    self.weight_vector[ind] -= step_size * 1.0
+                    self.weight_vector[ind] = self.weight_vector[ind] - (step_size * 1.0)

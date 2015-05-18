@@ -118,7 +118,7 @@ class posTagger(object):
                 # i % x == 0 is True exactly alpha_decreases times
 
                 alpha /= 2
-
+            
             # shuffle tokens
             random.shuffle(tokens)
 
@@ -214,8 +214,11 @@ class posTagger(object):
 
         feat_vec = {}
 
-        # caps
-        feat_vec["CAPS"] = len(feat_vec)
+        # uppercase
+        feat_vec["uppercase"] = len(feat_vec)
+
+        # capitalized
+        #feat_vec["capitalized"] = len(feat_vec)
 
         # suffixes
 

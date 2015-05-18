@@ -3,6 +3,8 @@ class Token(object):
     # initialize token from a line in file:
     def __init__(self, line):
 
+        self.sparse_feat_vec = []
+
         # splits line tab-wise, writes the values in parameters:
         entries = line.split('\t')
         if len(entries) == 2:
@@ -22,12 +24,21 @@ class Token(object):
     # create the sparse feature vector for this token (addin only applicable features):
     def createFeatureVector(self, feat_vec, t_id, current_token, previous_token, next_token):
 
-        self.sparse_feat_vec = []
-
-        # CAPS
+        # Uppercase
 
         if current_token.form.isupper():
-            self.sparse_feat_vec.append(feat_vec["CAPS"])
+            self.sparse_feat_vec.append(feat_vec["uppercase"])
+
+        """
+        if current_token.form[0].isupper():
+            upper_char = False
+            for char in current_token.form[1:]:
+                if char.isupper():
+                    upper_char = True
+            if not upper_char:
+                print current_token.form
+                self.sparse_feat_vec.append(feat_vec["capitalized"])
+        """
 
         # form
 
@@ -44,7 +55,6 @@ class Token(object):
         if next_token:
             if "next_form_" + next_token.form in feat_vec:
                 self.sparse_feat_vec.append(feat_vec["next_form_" + next_token.form])
-
 
         # form length
 
