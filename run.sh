@@ -3,8 +3,8 @@
 CORPORA="../team-lab-ss2015/data/pos"
 
 affixes=0
-train=1
-test=1
+train=0
+test=0
 evaluate=1
 
 head -1000 $CORPORA/train.col >> $CORPORA/train_top5000.col
