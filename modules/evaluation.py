@@ -20,6 +20,7 @@ def evaluate(file_in, out_file):
 
     unique_tags_scores = {}
     correct_predictions = 0
+    false_predictions = 0
 
     TP = 0.0
     FN = 0.0
@@ -42,6 +43,7 @@ def evaluate(file_in, out_file):
                 correct_predictions += 1
                 unique_tags[token.gold_pos]['TP'] += 1
             else:
+                false_predictions += 1
                 unique_tags[token.gold_pos]['FN'] += 1
                 unique_tags[token.predicted_pos]['FP'] += 1
 
@@ -97,15 +99,16 @@ def evaluate(file_in, out_file):
         recall_sum += unique_tags_scores[pos]['recall']
         f_score_sum += unique_tags_scores[pos]['f-score']
 
-    macro_averagedprecision = precision_sum / float(len(unique_tags_scores))
-    macro_averagedrecall = recall_sum / float(len(unique_tags_scores))
-    macro_averagedf_score = f_score_sum / float(len(unique_tags_scores))
+    macro_averaged_precision = precision_sum / float(len(unique_tags_scores))
+    macro_averaged_recall = recall_sum / float(len(unique_tags_scores))
+    macro_averaged_f_score = f_score_sum / float(len(unique_tags_scores))
 
     micro_averaged_precision = TP/(TP+FP)*100
     micro_averaged_recall = TP/(TP+FN)*100
     micro_averaged_f_score = (2*micro_averaged_precision*micro_averaged_recall)/(micro_averaged_precision+micro_averaged_recall)
 
     accuracy = (float(correct_predictions) / float(prediction_count)) * 100
+    error_rate = (float(false_predictions) / float(prediction_count)) * 100
 
     t1 = time.time()
     print "\t\t" + str(t1 - t0) + " sec."
@@ -117,11 +120,12 @@ def evaluate(file_in, out_file):
     print >> out_file, "Correct Predictions:\t" + str(correct_predictions)
     print >> out_file, "False Predictions:\t" + str(false_tags)
     print >> out_file, ""
-    print >> out_file, "Overall Accuracy:\t" + str(round(accuracy, 2))
+    print >> out_file, "Accuracy:\t" + str(round(accuracy, 2))
+    print >> out_file, "Error rate:\t" + str(round(error_rate, 2))
     print >> out_file, ""
-    print >> out_file, "Overall Precision:\t" + str(round(macro_averagedprecision, 2))
-    print >> out_file, "Overall Recall:\t" + str(round(macro_averagedrecall, 2))
-    print >> out_file, "Overall F-Score:\t" + str(round(macro_averagedf_score, 2))
+    print >> out_file, "Overall Precision (mac-av):\t" + str(round(macro_averaged_precision, 2))
+    print >> out_file, "Overall Recall (mac-av):\t" + str(round(macro_averaged_recall, 2))
+    print >> out_file, "Overall F-Score (mac-av):\t" + str(round(macro_averaged_f_score, 2))
     print >> out_file, ""
     print >> out_file, "Overall Precision (mic-av):\t" + str(round(micro_averaged_precision, 2))
     print >> out_file, "Overall Recall (mic-av):\t" + str(round(micro_averaged_recall, 2))
@@ -139,11 +143,12 @@ def evaluate(file_in, out_file):
     print "Correct Predictions:\t" + str(correct_predictions)
     print "False Predictions:\t" + str(false_tags)
     print ""
-    print "Overall Accuracy:\t" + str(round(accuracy, 2))
+    print "Accuracy:\t" + str(round(accuracy, 2))
+    print "Error rate:\t" + str(round(error_rate, 2))
     print ""
-    print "Overall Precision (mac-av):\t" + str(round(macro_averagedprecision, 2))
-    print "Overall Recall (mac-av):\t" + str(round(macro_averagedrecall, 2))
-    print "Overall F-Score (mac-av):\t" + str(round(macro_averagedf_score, 2))
+    print "Overall Precision (mac-av):\t" + str(round(macro_averaged_precision, 2))
+    print "Overall Recall (mac-av):\t" + str(round(macro_averaged_recall, 2))
+    print "Overall F-Score (mac-av):\t" + str(round(macro_averaged_f_score, 2))
     print ""
     print "Overall Precision (mic-av):\t" + str(round(micro_averaged_precision, 2))
     print "Overall Recall (mic-av):\t" + str(round(micro_averaged_recall, 2))
