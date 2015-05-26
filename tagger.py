@@ -70,6 +70,7 @@ class posTagger(object):
                     token.set_adjacent_tokens(sentence[t_id - 1], sentence[t_id + 1])
                     token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                               sentence[t_id - 1], sentence[t_id + 1])
+                token.set_sentence_index(t_id)
                 tokens.append(token)
                 tag_set.add(token.gold_pos)
 

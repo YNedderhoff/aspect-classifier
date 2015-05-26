@@ -3,6 +3,7 @@ class lmi(object):
     def __init__(self, tokens, feat_vec):
         self.tokens = tokens
         self.feat_vec = feat_vec
+        self.top_x = [2, 3, 4, 5]
         
     def compute_lmi(self):
         pos_tags = {}
@@ -60,39 +61,55 @@ class lmi(object):
                 else:
                     lmi_dict["next_form_" + token.next_token.form][token.gold_pos] = 1
 
-            #BIS HIER
-
             # form length
     
             # the current form length:
-            if "current_form_len_" + str(len(token.form)) in feat_vec:
-                self.sparse_feat_vec.append(feat_vec["current_form_len_" + str(len(token.form))])
+            if token.gold_pos in lmi_dict["current_form_len_" + str(len(token.form))]:
+                lmi_dict["current_form_len_" + str(len(token.form))][token.gold_pos] += 1
+            else:
+                lmi_dict["current_form_len_" + str(len(token.form))][token.gold_pos] = 1
     
             # if applicable, the previous form length:
-            if previous_token:
-                if "previous_form_len_" + str(len(previous_token.form)) in feat_vec:
-                    self.sparse_feat_vec.append(feat_vec["previous_form_len_" + str(len(previous_token.form))])
+            if token.previous_token:
+                if token.gold_pos in lmi_dict["previous_form_len_" + str(len(token.form))]:
+                    lmi_dict["previous_form_len_" + str(len(token.form))][token.gold_pos] += 1
+                else:
+                    lmi_dict["previous_form_len_" + str(len(token.form))][token.gold_pos] = 1
     
             # if applicable, the next token form length:
-            if next_token:
-                if "next_form_len_" + str(len(next_token.form)) in feat_vec:
-                    self.sparse_feat_vec.append(feat_vec["next_form_len_" + str(len(next_token.form))])
+            if token.next_token:
+                if token.gold_pos in lmi_dict["next_form_len_" + str(len(token.form))]:
+                    lmi_dict["next_form_len_" + str(len(token.form))][token.gold_pos] += 1
+                else:
+                    lmi_dict["next_form_len_" + str(len(token.form))][token.gold_pos] = 1
     
             # position in sentence
     
-            if "position_in_sentence_" + str(t_id) in feat_vec:
-                self.sparse_feat_vec.append(feat_vec["position_in_sentence_" + str(t_id)])
+            if token.gold_pos in lmi_dict["position_in_sentence_" + str(token.t_id)]:
+                lmi_dict["position_in_sentence_" + str(token.t_id)][token.gold_pos] += 1
+            else:
+                lmi_dict["position_in_sentence_" + str(token.t_id)][token.gold_pos] = 1
                 
             for i in self.top_x:
-                if "prefix_" + token.form[:i] in feat_vec:
-                    self.sparse_feat_vec.append(feat_vec["prefix_" + token.form[:i]])
-                if "suffix_" + token.form[-i:] in feat_vec:
-                    self.sparse_feat_vec.append(feat_vec["suffix_" + token.form[-i:]])
+                if "prefix_" + token.form[:i] in lmi_dict:
+                    if token.gold_pos in lmi_dict["prefix_" + token.form[:i]]:
+                        lmi_dict["prefix_" + token.form[:i]][token.gold_pos] += 1
+                    else:
+                        lmi_dict["prefix_" + token.form[:i]][token.gold_pos] = 1
+                if "suffix_" + token.form[-i:] in lmi_dict:
+                    if token.gold_pos in lmi_dict["suffix_" + token.form[-i:]]:
+                        lmi_dict["suffix_" + token.form[-i:]][token.gold_pos] += 1
+                    else:
+                        lmi_dict["suffix_" + token.form[-i:]][token.gold_pos] = 1
     
                 if len(token.form) > i+1 and i > 2:
     
                     # letter combinations in the word
                     # if they don't overlap with pre- or suffixes
                     for j in range(i, len(token.form)-(i*2-1)):
-                        if "lettercombs_" + token.form[j:j+i] in feat_vec:
-                            self.sparse_feat_vec.append(feat_vec["lettercombs_" + token.form[j:j+i]])
+                        if "lettercombs_" + token.form[j:j+i] in lmi_dict:
+                            if token.gold_pos in lmi_dict["lettercombs_" + token.form[j:j+i]]:
+                                lmi_dict["lettercombs_" + token.form[j:j+i]][token.gold_pos] += 1
+                            else:
+                                lmi_dict["lettercombs_" + token.form[j:j+i]][token.gold_pos] = 1
+            

@@ -7,6 +7,7 @@ class Token(object):
         self.top_x = [2, 3, 4, 5]
         self.next_token = None
         self.previous_token = None
+        self.t_id = -1
         # splits line tab-wise, writes the values in parameters:
         entries = line.split('\t')
         if len(entries) == 2:
@@ -29,6 +30,9 @@ class Token(object):
             self.previous_token = previous_token
         if next_token:
             self.next_token = next_token
+
+    def set_sentence_index(self, t_id):
+        this.t_id = t_id
 
     # create the sparse feature vector for this token (addin only applicable features):
     def createFeatureVector(self, feat_vec, t_id, current_token, previous_token, next_token):
