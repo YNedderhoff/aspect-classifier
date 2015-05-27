@@ -7,7 +7,7 @@ class lmi(object):
         self.feat_vec = feat_vec
         self.top_x = [2, 3, 4, 5]
         
-    @property
+    #@property
     def compute_lmi(self):
         pos_tags = {}
         lmi_dict = {}
