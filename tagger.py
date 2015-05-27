@@ -33,7 +33,7 @@ class posTagger(object):
         return model
 
     # train the classifiers using the perceptron algorithm:
-    def train(self, file_in, file_out, max_iterations):
+    def train(self, file_in, file_out, max_iterations, threshold):
         print "\tTraining file: " + file_in
 
         print "\tExtracting features"
@@ -81,12 +81,18 @@ class posTagger(object):
         z0 = time.time()
         classifiers = {}
 
+        lmi_calc = lmi.lmi(tokens, feat_vec)
+        lmi_dict = lmi_calc.compute_lmi
+        #self.save("lmi_dict", lmi_dict)
+
+        #lmi_dict = self.load("lmi_dict")
         # instantiate a classifier for each pos tag type:
         for tag in tag_set:
-            classifiers[tag] = perceptron.classifier(len(feat_vec))
-
-        lmi(tokens, feat_vec)
-
+            classifiers[tag] = perceptron.classifier(tag, feat_vec, lmi_dict, threshold)
+        feat_count = 0
+        for tag in classifiers:
+            feat_count+= sum(classifiers[tag].binary_vector)
+        print str(feat_count) + " (" + str(threshold) + ")"
         # train the classifiers:
 
         alpha = 0.1  # smoothes the effect of adjustments
@@ -129,7 +135,8 @@ class posTagger(object):
             
             # shuffle tokens
             random.shuffle(tokens)
-
+        for tag in classifiers:
+            classifiers[tag].multiply_with_binary()
         # after training is completed, save classifier vectors (model) to file:
         self.save(file_out, [feat_vec, classifiers])
 
@@ -256,18 +263,22 @@ class posTagger(object):
                 # form:
                 if not "current_form_" + token.form in feat_vec:
                     feat_vec["current_form_" + token.form] = len(feat_vec)
-                if not "prev_form_" + token.form in feat_vec:
-                    feat_vec["prev_form_" + token.form] = len(feat_vec)
-                if not "next_form_" + token.form in feat_vec:
-                    feat_vec["next_form_" + token.form] = len(feat_vec)
+                if tid < len(sentence)-1:
+                    if not "prev_form_" + token.form in feat_vec:
+                        feat_vec["prev_form_" + token.form] = len(feat_vec)
+                if tid != 0:
+                    if not "next_form_" + token.form in feat_vec:
+                        feat_vec["next_form_" + token.form] = len(feat_vec)
 
                 # form length
                 if not "current_form_len_" + str(len(token.form)) in feat_vec:
                     feat_vec["current_form_len_" + str(len(token.form))] = len(feat_vec)
-                if not "prev_form_len_" + str(len(token.form)) in feat_vec:
-                    feat_vec["prev_form_len_" + str(len(token.form))] = len(feat_vec)
-                if not "next_form_len_" + str(len(token.form)) in feat_vec:
-                    feat_vec["next_form_len_" + str(len(token.form))] = len(feat_vec)
+                if tid < len(sentence)-1:
+                    if not "prev_form_len_" + str(len(token.form)) in feat_vec:
+                        feat_vec["prev_form_len_" + str(len(token.form))] = len(feat_vec)
+                if tid != 0:
+                    if not "next_form_len_" + str(len(token.form)) in feat_vec:
+                        feat_vec["next_form_len_" + str(len(token.form))] = len(feat_vec)
 
                 # position in sentence
                 if not "position_in_sentence_" + str(tid) in feat_vec:
@@ -291,6 +302,7 @@ if __name__ == '__main__':
     mode.add_argument('-ev', dest='evaluate', action='store_true', help='run in evaluation mode')
 
     argpar.add_argument('-i', '--infile', dest='in_file', help='in file', required=True)
+    argpar.add_argument('-t', '--threshold', dest='threshold', help='threshold', default='0')
     argpar.add_argument('-e', '--epochs', dest='epochs', help='epochs', default='1')
     argpar.add_argument('-m', '--model', dest='model', help='model', default='model')
     # argpar.add_argument('-g','--gold',dest='gold',help='gold',required=True)
@@ -308,7 +320,7 @@ if __name__ == '__main__':
             find_affixes(args.in_file, 5)
         elif args.train:
             print "Running in training mode\n"
-            t.train(args.in_file, args.model, int(args.epochs))
+            t.train(args.in_file, args.model, int(args.epochs), float(args.threshold))
         elif args.test:
             print "Running in test mode\n"
             t.test(args.in_file, args.model, args.output_file)

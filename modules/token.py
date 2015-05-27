@@ -8,8 +8,26 @@ class Token(object):
         self.next_token = None
         self.previous_token = None
         self.t_id = -1
+
+        self.uppercase = False
+        self.capitalized = False
+
+
+
         # splits line tab-wise, writes the values in parameters:
         entries = line.split('\t')
+
+        if entries[0].isupper():
+            self.uppercase = True
+        if entries[0][0].isupper():
+            upper_char = False
+            for char in entries[0][1:]:
+                if char.isupper():
+                    upper_char = True
+                    break
+            if not upper_char:
+                self.capitalized = True
+
         if len(entries) == 2:
             self.form = entries[0].lower()
             self.gold_pos = entries[1]
@@ -32,24 +50,18 @@ class Token(object):
             self.next_token = next_token
 
     def set_sentence_index(self, t_id):
-        this.t_id = t_id
+        self.t_id = t_id
 
     # create the sparse feature vector for this token (addin only applicable features):
     def createFeatureVector(self, feat_vec, t_id, current_token, previous_token, next_token):
 
         # Uppercase
 
-        if current_token.form.isupper():
+        if self.uppercase:
             self.sparse_feat_vec.append(feat_vec["uppercase"])
 
-
-        if current_token.form[0].isupper():
-            upper_char = False
-            for char in current_token.form[1:]:
-                if char.isupper():
-                    upper_char = True
-            if not upper_char:
-                self.sparse_feat_vec.append(feat_vec["capitalized"])
+        if self.capitalized:
+            self.sparse_feat_vec.append(feat_vec["capitalized"])
 
 
         # form
@@ -60,7 +72,7 @@ class Token(object):
 
         # if applicable, the previous form:
         if previous_token:
-            if "previous_form_" + previous_token.form in feat_vec:
+            if "prev_form_" + previous_token.form in feat_vec:
                 self.sparse_feat_vec.append(feat_vec["prev_form_" + previous_token.form])
 
         # if applicable, the next token form:
@@ -76,8 +88,8 @@ class Token(object):
 
         # if applicable, the previous form length:
         if previous_token:
-            if "previous_form_len_" + str(len(previous_token.form)) in feat_vec:
-                self.sparse_feat_vec.append(feat_vec["previous_form_len_" + str(len(previous_token.form))])
+            if "prev_form_len_" + str(len(previous_token.form)) in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["prev_form_len_" + str(len(previous_token.form))])
 
         # if applicable, the next token form length:
         if next_token:

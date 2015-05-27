@@ -103,9 +103,18 @@ def evaluate(file_in, out_file):
     macro_averaged_recall = recall_sum / float(len(unique_tags_scores))
     macro_averaged_f_score = f_score_sum / float(len(unique_tags_scores))
 
-    micro_averaged_precision = TP/(TP+FP)*100
-    micro_averaged_recall = TP/(TP+FN)*100
-    micro_averaged_f_score = (2*micro_averaged_precision*micro_averaged_recall)/(micro_averaged_precision+micro_averaged_recall)
+    if TP+FP != 0:
+        micro_averaged_precision = TP/(TP+FP)*100
+    else:
+        micro_averaged_precision = 0.0
+    if TP+FN != 0:
+        micro_averaged_recall = TP/(TP+FN)*100
+    else:
+        micro_averaged_recall = 0.0
+    if micro_averaged_precision+micro_averaged_recall != 0:
+        micro_averaged_f_score = (2*micro_averaged_precision*micro_averaged_recall)/(micro_averaged_precision+micro_averaged_recall)
+    else:
+        micro_averaged_f_score = 0.0
 
     accuracy = (float(correct_predictions) / float(prediction_count)) * 100
     error_rate = (float(false_predictions) / float(prediction_count)) * 100
@@ -139,22 +148,22 @@ def evaluate(file_in, out_file):
                            str(round(unique_tags_scores[pos]['recall'], 2)) + "\tF-Score: " + \
                            str(round(unique_tags_scores[pos]['f-score'], 2))
 
-    print "Total Predictions:\t" + str(prediction_count)
-    print "Correct Predictions:\t" + str(correct_predictions)
-    print "False Predictions:\t" + str(false_tags)
+    print "\t\tTotal Predictions:\t" + str(prediction_count)
+    print "\t\tCorrect Predictions:\t" + str(correct_predictions)
+    print "\t\tFalse Predictions:\t" + str(false_tags)
     print ""
-    print "Accuracy:\t" + str(round(accuracy, 2))
-    print "Error rate:\t" + str(round(error_rate, 2))
+    print "\t\tAccuracy:\t" + str(round(accuracy, 2))
+    print "\t\tError rate:\t" + str(round(error_rate, 2))
     print ""
-    print "Overall Precision (mac-av):\t" + str(round(macro_averaged_precision, 2))
-    print "Overall Recall (mac-av):\t" + str(round(macro_averaged_recall, 2))
-    print "Overall F-Score (mac-av):\t" + str(round(macro_averaged_f_score, 2))
+    print "\t\tOverall Precision (mac-av):\t" + str(round(macro_averaged_precision, 2))
+    print "\t\tOverall Recall (mac-av):\t" + str(round(macro_averaged_recall, 2))
+    print "\t\tOverall F-Score (mac-av):\t" + str(round(macro_averaged_f_score, 2))
     print ""
-    print "Overall Precision (mic-av):\t" + str(round(micro_averaged_precision, 2))
-    print "Overall Recall (mic-av):\t" + str(round(micro_averaged_recall, 2))
-    print "Overall F-Score (mic-av):\t" + str(round(micro_averaged_f_score, 2))
+    print "\t\tOverall Precision (mic-av):\t" + str(round(micro_averaged_precision, 2))
+    print "\t\tOverall Recall (mic-av):\t" + str(round(micro_averaged_recall, 2))
+    print "\t\tOverall F-Score (mic-av):\t" + str(round(micro_averaged_f_score, 2))
     print ""
-    print "For details see the output file."
+    print "\t\tFor details see the output file."
 
     z1 = time.time()
     print "\t\t" + str(z1 - z0) + " sec."
