@@ -83,9 +83,7 @@ class posTagger(object):
 
         lmi_calc = lmi.lmi(tokens, feat_vec)
         lmi_dict = lmi_calc.compute_lmi
-        #self.save("lmi_dict", lmi_dict)
 
-        #lmi_dict = self.load("lmi_dict")
         # instantiate a classifier for each pos tag type:
         for tag in tag_set:
             classifiers[tag] = perceptron.classifier(tag, feat_vec, lmi_dict, threshold)

@@ -33,6 +33,7 @@ while read p; do
         #python -u tagger.py -test -i $CORPORA/dev.col -m $MODELS/model$COUNTER -o $PREDICTIONS/prediction$COUNTER.col
         python -u tagger.py -test -i $CORPORA/dev_top5000.col -m $MODELS/model$COUNTER -o $PREDICTIONS/prediction$COUNTER.col
         #python tagger.py -test -i $CORPORA/dev_top5000.col -m model -o prediction.col
+        rm -f $MODELS/model$COUNTER
     fi
 
     # Evaluate the results
