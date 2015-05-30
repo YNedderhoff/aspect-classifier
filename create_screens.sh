@@ -4,7 +4,7 @@ COUNTER=0
 MAXIMUM=20
 LINES=12741
 
-while [ $COUNTER -le $MAXIMUM ]; do
+while [ "$COUNTER" -le "$MAXIMUM" ]; do
 
     let COUNTER2=$COUNTER+1
 

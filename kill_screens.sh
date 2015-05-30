@@ -3,7 +3,7 @@
 COUNTER=1
 MAXIMUM=100
 
-while [ $COUNTER -le $MAXIMUM ]; do
+while [ "$COUNTER" -le "$MAXIMUM" ]; do
 
     screen -S "teamlab"$COUNTER -X quit
 

@@ -25,7 +25,7 @@ while read p; do
 #  Train the model
     let COUNTER=COUNTER+1
 
-    if [ $COUNTER -ge $1 ]  && [ $COUNTER -lt $2 ]; then
+    if [ "$COUNTER" -ge "$1" ]  && [ "$COUNTER" -lt "$2" ]; then
    
 
         if [ "$train" = 1 ]; then
