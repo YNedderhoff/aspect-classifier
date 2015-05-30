@@ -82,7 +82,7 @@ class posTagger(object):
         classifiers = {}
 
         lmi_calc = lmi.lmi(tokens, feat_vec)
-        lmi_dict = lmi_calc.compute_lmi
+        lmi_dict = lmi_calc.compute_lmi()
 
         # instantiate a classifier for each pos tag type:
         for tag in tag_set:
