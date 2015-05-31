@@ -2,13 +2,17 @@
 
 COUNTER=0
 MAXIMUM=20
-LINES=12741
+LINES=565
 
 while [ "$COUNTER" -le "$MAXIMUM" ]; do
 
     let COUNTER2=$COUNTER+1
 
-    screen -dmS "teamlab"$COUNTER2 ./run1.sh $(($COUNTER*$LINES)) $(($COUNTER2*$LINES))
+    if [ "$COUNTER2"*"$LINES" -gt 11288 ]; then
+        screen -dmS "teamlab"$COUNTER2 ./run1b.sh $(($COUNTER*$LINES)) 11288
+    else
+        screen -dmS "teamlab"$COUNTER2 ./run1b.sh $(($COUNTER*$LINES)) $(($COUNTER2*$LINES))
+    fi
     
     let COUNTER=COUNTER+1
 

@@ -200,7 +200,7 @@ class lmi(object):
             else:
                 print "This should not happen"
                 print feature
-
+        
         temp = {}
         for feature in lmi_dict:
             for pos_tag in lmi_dict[feature]:
@@ -208,6 +208,8 @@ class lmi(object):
                     temp[pos_tag].append([feature, lmi_dict[feature][pos_tag]])
                 else:
                     temp[pos_tag] = [[feature, lmi_dict[feature][pos_tag]]]
+        for pos_tag in temp:
+            temp[pos_tag] = [[x[0],str(x[1])] for x in sorted(temp[pos_tag], key = lambda x: x[1], reverse=True)]
         lmi_values = open("lmi2.txt", "w")
         line = ""
         pos_tags = temp.keys()
@@ -215,11 +217,20 @@ class lmi(object):
             line += pos_tag + "\t"
         line = line[:-1]
         lmi_values.write(line.encode("utf-8") + "\n")
-        for ind in range(len(temp[pos_tags[0]])):
+        max_len = 0
+        for pos_tag in pos_tags:
+            if len(temp[pos_tag]) > max_len:
+                max_len = len(temp[pos_tag])
+        print max_len
+        for ind in range(max_len):
             line = ""
             for pos_tag in pos_tags:
-                line += ",".join([str(x) for x in sorted(temp[pos_tag], key = lambda x: x[1], reverse=True)[ind]]) + "\t"
-            if ind < len(temp[pos_tags[0]]) - 1:
+                try:
+                    line += ",".join(temp[pos_tag][ind]) + "\t"
+                except IndexError:
+                    line += ",".join(temp[pos_tag][-1]) + "\t"
+            line = line[:-1]
+            if ind < max_len - 1:
                 lmi_values.write(line.encode("utf-8") + "\n")
             else:
                 lmi_values.write(line.encode("utf-8"))
