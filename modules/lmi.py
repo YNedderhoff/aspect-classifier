@@ -200,7 +200,7 @@ class lmi(object):
             else:
                 print "This should not happen"
                 print feature
-        
+        """
         temp = {}
         for feature in lmi_dict:
             for pos_tag in lmi_dict[feature]:
@@ -210,7 +210,7 @@ class lmi(object):
                     temp[pos_tag] = [[feature, lmi_dict[feature][pos_tag]]]
         for pos_tag in temp:
             temp[pos_tag] = [[x[0],str(x[1])] for x in sorted(temp[pos_tag], key = lambda x: x[1], reverse=True)]
-        lmi_values = open("lmi2.txt", "w")
+        lmi_values = open("lmi3.txt", "w")
         line = ""
         pos_tags = temp.keys()
         for pos_tag in pos_tags:
@@ -236,7 +236,7 @@ class lmi(object):
                 lmi_values.write(line.encode("utf-8"))
         lmi_values.close()
 
-        """
+        
         temp = []
         for feature in lmi_dict:
             temp += [x for x in lmi_dict[feature].values()]

@@ -8,10 +8,10 @@ while [ "$COUNTER" -le "$MAXIMUM" ]; do
 
     let COUNTER2=$COUNTER+1
 
-    if [ "$COUNTER2"*"$LINES" -gt 11288 ]; then
-        screen -dmS "teamlab"$COUNTER2 ./run1b.sh $(($COUNTER*$LINES)) 11288
+    if [ $(($COUNTER2*$LINES)) -gt 11288 ]; then
+        screen -dmS "teamlab"$COUNTER2 ./run1b.sh $(($COUNTER*$LINES)) 11288 $COUNTER
     else
-        screen -dmS "teamlab"$COUNTER2 ./run1b.sh $(($COUNTER*$LINES)) $(($COUNTER2*$LINES))
+        screen -dmS "teamlab"$COUNTER2 ./run1b.sh $(($COUNTER*$LINES)) $(($COUNTER2*$LINES)) $COUNTER
     fi
     
     let COUNTER=COUNTER+1

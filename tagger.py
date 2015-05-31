@@ -33,7 +33,7 @@ class posTagger(object):
         return model
 
     # train the classifiers using the perceptron algorithm:
-    def train(self, file_in, file_out, max_iterations, line_number):
+    def train(self, file_in, file_out, max_iterations, line_number, lmi_file):
         print "\tTraining file: " + file_in
 
         print "\tExtracting features"
@@ -83,21 +83,18 @@ class posTagger(object):
 
         lmi_calc = lmi.lmi(tokens, feat_vec)
         lmi_dict = lmi_calc.compute_lmi()
-        
-        f = open("lmi2.txt")
+
+        f = open(lmi_file)
         lines = f.read().decode("utf-8").split("\n")
         f.close()
         thresholds = {}
         for ind in range(len(lines[0].split("\t"))):
-            thresholds[lines[0].split("\t")[ind]] = float(lines[line_number].split("\t")[ind].split(",")[1])
+            thresholds[lines[0].split("\t")[ind]] = float(lines[line_number].split("\t")[ind].split(",")[-1])
 
         # instantiate a classifier for each pos tag type:
         for tag in tag_set:
             classifiers[tag] = perceptron.classifier(tag, feat_vec, lmi_dict, thresholds[tag])
-        feat_count = 0
-        for tag in classifiers:
-            feat_count+= sum(classifiers[tag].binary_vector)
-        print str(feat_count) + " (" + str(threshold) + ")"
+
         # train the classifiers:
 
         alpha = 0.1  # smoothes the effect of adjustments
@@ -313,6 +310,7 @@ if __name__ == '__main__':
     # argpar.add_argument('-g','--gold',dest='gold',help='gold',required=True)
     # argpar.add_argument('-p','--prediction',dest='prediction',help='prediction',required=True)
     argpar.add_argument('-o', '--output', dest='output_file', help='output file', default='output.txt')
+    argpar.add_argument('-a', '--lmifile', dest='lmi_file', help='lmi file', default='lmi.txt')
     args = argpar.parse_args()
 
     t = posTagger()
@@ -325,7 +323,7 @@ if __name__ == '__main__':
             find_affixes(args.in_file, 5)
         elif args.train:
             print "Running in training mode\n"
-            t.train(args.in_file, args.model, int(args.epochs), float(args.line_number))
+            t.train(args.in_file, args.model, int(args.epochs), int(args.line_number), args.lmi_file)
         elif args.test:
             print "Running in test mode\n"
             t.test(args.in_file, args.model, args.output_file)

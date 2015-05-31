@@ -2,17 +2,17 @@
 
 CORPORA="../team-lab-ss2015/data/pos"
 
-MODELS="models"
-PREDICTIONS="predictions"
-EVALUATIONS="/mount/projekte50/projekte/semrel/Users/moritz/TeamLab/git/evaluations2"
+MODELS="models2"
+PREDICTIONS="predictions2"
+EVALUATIONS="/mount/projekte50/projekte/semrel/Users/moritz/TeamLab/git/evaluations3"
 
 affixes=0
 train=1
 test=1
 evaluate=1
 
-head -200000 $CORPORA/train.col > $CORPORA/train_top5000b$3.col
-head -200000 $CORPORA/dev.col > $CORPORA/dev_top5000b$3.col
+head -20000 $CORPORA/train.col > $CORPORA/train_top5000$3.col
+head -20000 $CORPORA/dev.col > $CORPORA/dev_top5000$3.col
 
 # Finding possible features, e.g. Affixes.
 if [ "$affixes" = 1 ]; then
@@ -27,14 +27,14 @@ while [ "$COUNTER" -lt "$2" ]; do
 
     if [ "$train" = 1 ]; then
         #python -u tagger.py -train -i $CORPORA/train.col -l $COUNTER -e 5 -m $MODELS/model$COUNTER
-        python -u tagger.py -train -i $CORPORA/train_top5000b$3.col -l $COUNTER -e 5 -m $MODELS/model$COUNTER -a lmi2.txt
+        python -u tagger.py -train -i $CORPORA/train_top5000$3.col -l $COUNTER -e 5 -m $MODELS/model$COUNTER -a lmi3.txt
         #python tagger.py -train -i $CORPORA/train_top5000.col -e 5 -m model
     fi
 
     # Test the model
     if [ "$test" = 1 ]; then
         #python -u tagger.py -test -i $CORPORA/dev.col -m $MODELS/model$COUNTER -o $PREDICTIONS/prediction$COUNTER.col
-        python -u tagger.py -test -i $CORPORA/dev_top5000b$3.col -m $MODELS/model$COUNTER -o $PREDICTIONS/prediction$COUNTER.col
+        python -u tagger.py -test -i $CORPORA/dev_top5000$3.col -m $MODELS/model$COUNTER -o $PREDICTIONS/prediction$COUNTER.col
         #python tagger.py -test -i $CORPORA/dev_top5000.col -m model -o prediction.col
         rm -f $MODELS/model$COUNTER
     fi
@@ -48,5 +48,5 @@ while [ "$COUNTER" -lt "$2" ]; do
     fi
 done
 
-rm $CORPORA/train_top5000b$3.col
-rm $CORPORA/dev_top5000b$3.col
+rm $CORPORA/train_top5000$3.col
+rm $CORPORA/dev_top5000$3.col
