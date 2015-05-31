@@ -201,12 +201,36 @@ class lmi(object):
                 print "This should not happen"
                 print feature
 
+        temp = {}
+        for feature in lmi_dict:
+            for pos_tag in lmi_dict[feature]:
+                if pos_tag in temp:
+                    temp[pos_tag].append([feature, lmi_dict[feature][pos_tag]])
+                else:
+                    temp[pos_tag] = [[feature, lmi_dict[feature][pos_tag]]]
+        lmi_values = open("lmi2.txt", "w")
+        line = ""
+        pos_tags = temp.keys()
+        for pos_tag in pos_tags:
+            line += pos_tag + "\t"
+        line = line[:-1]
+        lmi_values.write(line.encode("utf-8") + "\n")
+        for ind in range(len(temp[pos_tags[0]])):
+            line = ""
+            for pos_tag in pos_tags:
+                line += ",".join([str(x) for x in sorted(temp[pos_tag], key = lambda x: x[1], reverse=True)[ind]]) + "\t"
+            if ind < len(temp[pos_tags[0]]) - 1:
+                lmi_values.write(line.encode("utf-8") + "\n")
+            else:
+                lmi_values.write(line.encode("utf-8"))
+        lmi_values.close()
 
+        """
         temp = []
         for feature in lmi_dict:
             temp += [x for x in lmi_dict[feature].values()]
             #print lmi_dict[feature].values()[:5]
-        """
+
         lmi_values = open("lmi.txt", "w")
         for value in sorted(temp):
             lmi_values.write(str(value)+"\n")
