@@ -2,14 +2,10 @@
 
 CORPORA="../team-lab-ss2015/data/pos"
 
-MODELS="models/"
-PREDICTIONS="predictions/"
-EVALUATIONS="evaluations/"
-
 affixes=0
 train=1
-test=0
-evaluate=0
+test=1
+evaluate=1
 
 #head -20000 $CORPORA/train.col >> $CORPORA/train_top5000.col
 #head -20000 $CORPORA/dev.col >> $CORPORA/dev_top5000.col
@@ -21,7 +17,7 @@ if [ "$affixes" = 1 ]; then
 fi
 
 if [ "$train" = 1 ]; then
-    python -u tagger.py -train -i $CORPORA/train.col -t 0 -e 5 -m model
+    python -u tagger.py -train -i $CORPORA/train.col -e 5 -m model
     #python -u tagger.py -train -i $CORPORA/train_top5000.col -t $p -e 5 -m $MODELS/model$COUNTER
     #python tagger.py -train -i $CORPORA/train_top5000.col -e 5 -m model
 fi

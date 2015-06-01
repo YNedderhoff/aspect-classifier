@@ -83,17 +83,22 @@ class posTagger(object):
 
         lmi_calc = lmi.lmi(tokens, feat_vec)
         lmi_dict = lmi_calc.compute_lmi()
+        
+        if lmi_file == "none":
+            # instantiate a classifier for each pos tag type:
+            for tag in tag_set:
+                classifiers[tag] = perceptron.classifier(tag, feat_vec, lmi_dict, -float('inf'))
+        else:
+            f = open(lmi_file)
+            lines = f.read().decode("utf-8").split("\n")
+            f.close()
+            thresholds = {}
+            for ind in range(len(lines[0].split("\t"))):
+                thresholds[lines[0].split("\t")[ind]] = float(lines[int(line_number)].split("\t")[ind].split(",")[-1])
 
-        f = open(lmi_file)
-        lines = f.read().decode("utf-8").split("\n")
-        f.close()
-        thresholds = {}
-        for ind in range(len(lines[0].split("\t"))):
-            thresholds[lines[0].split("\t")[ind]] = float(lines[line_number].split("\t")[ind].split(",")[-1])
-
-        # instantiate a classifier for each pos tag type:
-        for tag in tag_set:
-            classifiers[tag] = perceptron.classifier(tag, feat_vec, lmi_dict, thresholds[tag])
+            # instantiate a classifier for each pos tag type:
+            for tag in tag_set:
+                classifiers[tag] = perceptron.classifier(tag, feat_vec, lmi_dict, thresholds[tag])
 
         # train the classifiers:
 
@@ -104,7 +109,11 @@ class posTagger(object):
         alpha_decreases = 5
 
         for i in range(1, max_iterations + 1):
-
+        
+            #batch training:
+            predictions = {}
+            for tag in classifiers:
+                predictions[tag] = classifiers[tag].weight_vector
             print "\t\tEpoch " + str(i) + ", alpha = " + str(alpha)
             for ind, t in enumerate(tokens):
                 if ind % (len(tokens) / 10) == 0 and not ind == 0:
@@ -113,7 +122,7 @@ class posTagger(object):
                 # expand sparse token feature vectors into all dimensions:
                 # expanded_feat_vec = t.expandFeatVec(len(feat_vec))
 
-                arg_max = ["", 0.0]
+                arg_max = [classifiers.keys()[0], 0.0]
                 for tag in classifiers:
                     # temp = classifiers[tag].classify(expanded_feat_vec)
                     temp = classifiers[tag].classify(t.sparse_feat_vec)
@@ -125,8 +134,13 @@ class posTagger(object):
 
                 # adjust classifier weights for incorrectly predicted tag and gold tag:
                 if arg_max[0] != t.gold_pos:
-                    classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha)
-                    classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha)
+                    predictions[t.gold_pos] = classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha, predictions[t.gold_pos])
+                    predictions[arg_max[0]] = classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha, predictions[arg_max[0]])
+            
+            #apply batch results to weight vectors:
+            for tag in classifiers:
+                classifiers[tag].weight_vector = predictions[tag]
+                    
 
             # decrease alpha
             if i % int(round(max_iterations ** 1.0 / float(alpha_decreases))) == 0:
@@ -304,13 +318,13 @@ if __name__ == '__main__':
     mode.add_argument('-ev', dest='evaluate', action='store_true', help='run in evaluation mode')
 
     argpar.add_argument('-i', '--infile', dest='in_file', help='in file', required=True)
-    argpar.add_argument('-l', '--line', dest='line_number', help='line', default='1')
+    argpar.add_argument('-l', '--line', dest='line_number', help='line', default='none')
     argpar.add_argument('-e', '--epochs', dest='epochs', help='epochs', default='1')
     argpar.add_argument('-m', '--model', dest='model', help='model', default='model')
     # argpar.add_argument('-g','--gold',dest='gold',help='gold',required=True)
     # argpar.add_argument('-p','--prediction',dest='prediction',help='prediction',required=True)
     argpar.add_argument('-o', '--output', dest='output_file', help='output file', default='output.txt')
-    argpar.add_argument('-a', '--lmifile', dest='lmi_file', help='lmi file', default='lmi.txt')
+    argpar.add_argument('-a', '--lmifile', dest='lmi_file', help='lmi file', default='none')
     args = argpar.parse_args()
 
     t = posTagger()
@@ -323,7 +337,7 @@ if __name__ == '__main__':
             find_affixes(args.in_file, 5)
         elif args.train:
             print "Running in training mode\n"
-            t.train(args.in_file, args.model, int(args.epochs), int(args.line_number), args.lmi_file)
+            t.train(args.in_file, args.model, int(args.epochs), args.line_number, args.lmi_file)
         elif args.test:
             print "Running in test mode\n"
             t.test(args.in_file, args.model, args.output_file)
