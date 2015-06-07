@@ -1,22 +1,13 @@
 #!/bin/bash
 
-COUNTER=0
-MAXIMUM=20
-LINES=565
 
-while [ "$COUNTER" -le "$MAXIMUM" ]; do
 
-    let COUNTER2=$COUNTER+1
+feature_groups=("form_" "word_len_" "position_" "prefix_" "suffix_" "lettercombs_")
+maximums=("12536" "54" "134" "5122" "4780" "1057")
+step_sizes=("16" "1" "1" "7" "7" "2")
 
-    if [ $(($COUNTER2*$LINES)) -gt 11288 ]; then
-        screen -dmS "teamlab"$COUNTER2 ./run1b.sh $(($COUNTER*$LINES)) 11288 $COUNTER
-    else
-        screen -dmS "teamlab"$COUNTER2 ./run1b.sh $(($COUNTER*$LINES)) $(($COUNTER2*$LINES)) $COUNTER
-    fi
-    
-    let COUNTER=COUNTER+1
-
+total=${#feature_groups[*]}
+# 
+for (( i=0; i<=$(( $total -1 )); i++ )) do
+    screen -dmS "teamlab"$i ./run_feat_group.sh ${maximums[$i]} ${feature_groups[$i]} ${step_sizes[$i]}
 done
-
-
-

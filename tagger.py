@@ -33,7 +33,7 @@ class posTagger(object):
         return model
 
     # train the classifiers using the perceptron algorithm:
-    def train(self, file_in, file_out, max_iterations, line_number, lmi_file):
+    def train(self, file_in, file_out, max_iterations, top_x):
         print "\tTraining file: " + file_in
 
         print "\tExtracting features"
@@ -83,22 +83,10 @@ class posTagger(object):
 
         lmi_calc = lmi.lmi(tokens, feat_vec)
         lmi_dict = lmi_calc.compute_lmi()
-        
-        if lmi_file == "none":
-            # instantiate a classifier for each pos tag type:
-            for tag in tag_set:
-                classifiers[tag] = perceptron.classifier(tag, feat_vec, lmi_dict, -float('inf'))
-        else:
-            f = open(lmi_file)
-            lines = f.read().decode("utf-8").split("\n")
-            f.close()
-            thresholds = {}
-            for ind in range(len(lines[0].split("\t"))):
-                thresholds[lines[0].split("\t")[ind]] = float(lines[int(line_number)].split("\t")[ind].split(",")[-1])
 
-            # instantiate a classifier for each pos tag type:
-            for tag in tag_set:
-                classifiers[tag] = perceptron.classifier(tag, feat_vec, lmi_dict, thresholds[tag])
+        # instantiate a classifier for each pos tag type:
+        for tag in tag_set:
+            classifiers[tag] = perceptron.classifier(tag, feat_vec, lmi_dict, top_x)
 
         # train the classifiers:
 
@@ -256,7 +244,7 @@ class posTagger(object):
         for l in affixes:
             for affix_length in l:
                 for affix in l[affix_length]:
-                    if sum(l[affix_length][affix].values()) > 500:
+                    if sum(l[affix_length][affix].values()) > 0:
                         if affixes.index(l) == 0:
                             feat_vec["suffix_" + affix] = len(feat_vec)
                         elif affixes.index(l) == 1:
@@ -287,14 +275,14 @@ class posTagger(object):
                         feat_vec["next_form_" + token.form] = len(feat_vec)
 
                 # form length
-                if not "current_form_len_" + str(len(token.form)) in feat_vec:
-                    feat_vec["current_form_len_" + str(len(token.form))] = len(feat_vec)
+                if not "current_word_len_" + str(len(token.form)) in feat_vec:
+                    feat_vec["current_word_len_" + str(len(token.form))] = len(feat_vec)
                 if tid < len(sentence)-1:
-                    if not "prev_form_len_" + str(len(token.form)) in feat_vec:
-                        feat_vec["prev_form_len_" + str(len(token.form))] = len(feat_vec)
+                    if not "prev_word_len_" + str(len(token.form)) in feat_vec:
+                        feat_vec["prev_word_len_" + str(len(token.form))] = len(feat_vec)
                 if tid != 0:
-                    if not "next_form_len_" + str(len(token.form)) in feat_vec:
-                        feat_vec["next_form_len_" + str(len(token.form))] = len(feat_vec)
+                    if not "next_word_len_" + str(len(token.form)) in feat_vec:
+                        feat_vec["next_word_len_" + str(len(token.form))] = len(feat_vec)
 
                 # position in sentence
                 if not "position_in_sentence_" + str(tid) in feat_vec:
@@ -318,13 +306,17 @@ if __name__ == '__main__':
     mode.add_argument('-ev', dest='evaluate', action='store_true', help='run in evaluation mode')
 
     argpar.add_argument('-i', '--infile', dest='in_file', help='in file', required=True)
-    argpar.add_argument('-l', '--line', dest='line_number', help='line', default='none')
     argpar.add_argument('-e', '--epochs', dest='epochs', help='epochs', default='1')
     argpar.add_argument('-m', '--model', dest='model', help='model', default='model')
     # argpar.add_argument('-g','--gold',dest='gold',help='gold',required=True)
     # argpar.add_argument('-p','--prediction',dest='prediction',help='prediction',required=True)
     argpar.add_argument('-o', '--output', dest='output_file', help='output file', default='output.txt')
-    argpar.add_argument('-a', '--lmifile', dest='lmi_file', help='lmi file', default='none')
+    argpar.add_argument('-t1', '--topxform', dest='top_x_form', help='top x form', default=None)
+    argpar.add_argument('-t2', '--topxwordlen', dest='top_x_word_len', help='top x word len', default=None)
+    argpar.add_argument('-t3', '--topxposition', dest='top_x_position', help='top x position', default=None)
+    argpar.add_argument('-t4', '--topxprefix', dest='top_x_prefix', help='top x prefix', default=None)
+    argpar.add_argument('-t5', '--topxsuffix', dest='top_x_suffix', help='top x suffix', default=None)
+    argpar.add_argument('-t6', '--topxlettercombs', dest='top_x_lettercombs', help='top x letter combs', default=None)
     args = argpar.parse_args()
 
     t = posTagger()
@@ -337,7 +329,8 @@ if __name__ == '__main__':
             find_affixes(args.in_file, 5)
         elif args.train:
             print "Running in training mode\n"
-            t.train(args.in_file, args.model, int(args.epochs), args.line_number, args.lmi_file)
+            top_x = [args.top_x_form, args.top_x_word_len, args.top_x_position, args.top_x_prefix, args.top_x_suffix, args.top_x_lettercombs]
+            t.train(args.in_file, args.model, int(args.epochs), top_x)
         elif args.test:
             print "Running in test mode\n"
             t.test(args.in_file, args.model, args.output_file)

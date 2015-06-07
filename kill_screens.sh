@@ -1,7 +1,7 @@
 #!/bin/bash
 
-COUNTER=1
-MAXIMUM=100
+COUNTER=0
+MAXIMUM=5
 
 while [ "$COUNTER" -le "$MAXIMUM" ]; do
 

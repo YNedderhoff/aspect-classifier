@@ -1,22 +1,28 @@
 class classifier(object):
     # initialize classifier setting all weights to 0.5:
-    def __init__(self, tag, feat_vec, lmi_dict, threshold):
+    def __init__(self, tag, feat_vec, lmi_dict, top_x):
 
         self.tag = tag
+        self.top_x = top_x
+        self.lmi_dict = lmi_dict
         self.feat_vec = feat_vec
         self.weight_vector = [0.0 for ind in range(len(feat_vec))]
-        self.lmi_dict = lmi_dict
-        self.threshold = threshold
-        self.binary_vector = [0 for ind in range(len(self.feat_vec))]
+        self.binary_vector = [0 for ind in range(len(feat_vec))]
         self.set_binaries()
 
     def set_binaries(self):
-
-        for feature in self.feat_vec:
-
-            if self.tag in self.lmi_dict[feature] and self.lmi_dict[feature][self.tag] >= self.threshold:
-                self.binary_vector[self.feat_vec[feature]] = 1
-
+        feature_groups = ["form_", "word_len_", "position_", "prefix_", "suffix_", "lettercombs_"]
+        for ind in range(len(self.top_x)):
+            if self.top_x[ind] != None:
+                temp = sorted([(x, self.lmi_dict[x][self.tag]) for x in self.feat_vec if self.tag in self.lmi_dict[x] and feature_groups[ind] in x],
+                              key = lambda x: x[1], reverse = True)[:int(self.top_x[ind])]
+                for elem in temp:
+                    self.binary_vector[self.feat_vec[elem[0]]] = 1
+            else:
+                for feature in self.feat_vec:
+                    if feature_groups[ind] in feature:
+                        self.binary_vector[self.feat_vec[feature]] = 1
+        
     # classify a token according to its feature vector:
     def classify(self, feat_vec):
         # return sum([self.weight_vector[i]*float(feat_vec[i]) for i in range(len(feat_vec))])

@@ -83,18 +83,18 @@ class Token(object):
         # form length
 
         # the current form length:
-        if "current_form_len_" + str(len(current_token.form)) in feat_vec:
-            self.sparse_feat_vec.append(feat_vec["current_form_len_" + str(len(current_token.form))])
+        if "current_word_len_" + str(len(current_token.form)) in feat_vec:
+            self.sparse_feat_vec.append(feat_vec["current_word_len_" + str(len(current_token.form))])
 
         # if applicable, the previous form length:
         if previous_token:
-            if "prev_form_len_" + str(len(previous_token.form)) in feat_vec:
-                self.sparse_feat_vec.append(feat_vec["prev_form_len_" + str(len(previous_token.form))])
+            if "prev_word_len_" + str(len(previous_token.form)) in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["prev_word_len_" + str(len(previous_token.form))])
 
         # if applicable, the next token form length:
         if next_token:
-            if "next_form_len_" + str(len(next_token.form)) in feat_vec:
-                self.sparse_feat_vec.append(feat_vec["next_form_len_" + str(len(next_token.form))])
+            if "next_word_len_" + str(len(next_token.form)) in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["next_word_len_" + str(len(next_token.form))])
 
         # position in sentence
 
