@@ -121,10 +121,10 @@ class posTagger(object):
                         arg_max[1] = temp
 
                 # adjust classifier weights for incorrectly predicted tag and gold tag:
-
-                if arg_max[0] != t.gold_pos:
-                    predictions[t.gold_pos] = classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha, predictions[t.gold_pos])
-                    predictions[arg_max[0]] = classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha, predictions[arg_max[0]])
+                if batch_training:
+                    if arg_max[0] != t.gold_pos:
+                        predictions[t.gold_pos] = classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha, predictions[t.gold_pos])
+                        predictions[arg_max[0]] = classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha, predictions[arg_max[0]])
                 else:
                     if arg_max[0] != t.gold_pos:
                         classifiers[t.gold_pos].weight_vector = classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha, classifiers[t.gold_pos].weight_vector)
