@@ -7,7 +7,6 @@ class lmi(object):
         self.feat_vec = feat_vec
         self.top_x = [2, 3, 4, 5]
         
-    #@property
     def compute_lmi(self):
         pos_tags = {}
         lmi_dict = {}
@@ -39,8 +38,7 @@ class lmi(object):
                         lmi_dict["capitalized"][token.gold_pos] += 1
                     else:
                         lmi_dict["capitalized"][token.gold_pos] = 1
-    
-    
+
             # form
     
             # the current form:
@@ -121,78 +119,4 @@ class lmi(object):
             for pos_tag in lmi_dict[feature]:
                 lmi_dict[feature][pos_tag] = round(float(lmi_dict[feature][pos_tag])*log(float(lmi_dict[feature][pos_tag])/(float(pos_tags[pos_tag])*float(temp)), 2), 2)
 
-        """
-        form_counter = 0
-        word_len_counter = 0
-        position_counter = 0
-        prefix_counter = 0
-        suffix_counter = 0
-        lettercombs_counter = 0
-        for feature in lmi_dict:
-            if "form_" in feature:
-                form_counter += 1
-            elif "word_len_" in feature:
-                word_len_counter += 1
-            elif "position_" in feature:
-                position_counter += 1
-            elif "prefix_" in feature:
-                prefix_counter += 1
-            elif "suffix_" in feature:
-                suffix_counter += 1
-            elif "lettercombs_" in feature:
-                lettercombs_counter += 1
-        print form_counter
-        print word_len_counter
-        print position_counter
-        print prefix_counter
-        print suffix_counter
-        print lettercombs_counter
-        """
-        """
-        temp = {}
-        for feature in lmi_dict:
-            for pos_tag in lmi_dict[feature]:
-                if pos_tag in temp:
-                    temp[pos_tag].append([feature, lmi_dict[feature][pos_tag]])
-                else:
-                    temp[pos_tag] = [[feature, lmi_dict[feature][pos_tag]]]
-        for pos_tag in temp:
-            temp[pos_tag] = [[x[0],str(x[1])] for x in sorted(temp[pos_tag], key = lambda x: x[1], reverse=True)]
-        lmi_values = open("lmi3.txt", "w")
-        line = ""
-        pos_tags = temp.keys()
-        for pos_tag in pos_tags:
-            line += pos_tag + "\t"
-        line = line[:-1]
-        lmi_values.write(line.encode("utf-8") + "\n")
-        max_len = 0
-        for pos_tag in pos_tags:
-            if len(temp[pos_tag]) > max_len:
-                max_len = len(temp[pos_tag])
-        print max_len
-        for ind in range(max_len):
-            line = ""
-            for pos_tag in pos_tags:
-                try:
-                    line += ",".join(temp[pos_tag][ind]) + "\t"
-                except IndexError:
-                    line += ",".join(temp[pos_tag][-1]) + "\t"
-            line = line[:-1]
-            if ind < max_len - 1:
-                lmi_values.write(line.encode("utf-8") + "\n")
-            else:
-                lmi_values.write(line.encode("utf-8"))
-        lmi_values.close()
-
-        
-        temp = []
-        for feature in lmi_dict:
-            temp += [x for x in lmi_dict[feature].values()]
-            #print lmi_dict[feature].values()[:5]
-
-        lmi_values = open("lmi.txt", "w")
-        for value in sorted(temp):
-            lmi_values.write(str(value)+"\n")
-        lmi_values.close()
-        """
         return lmi_dict

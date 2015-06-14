@@ -86,32 +86,3 @@ def find_affixes(file_in, len_list):
     t1 = time.time()
     print "\t\t"+str(t1-t0)+" sec."
     return [suffixes, prefixes, letter_combs]
-    """
-    print "\tComputing top prefixes and suffixes"
-    t0 = time.time()
-
-    for l in [suffixes, prefixes, letter_combs]:
-
-        if [suffixes, prefixes, letter_combs].index(l) == 0: print "\t\tSuffixes:"
-        elif [suffixes, prefixes, letter_combs].index(l) == 1: print "\t\tPrefixes:"
-        else: print "\t\tLetter Combinations:"
-
-        for x in top_x:
-            if len(l[x]) > 0:
-                print "\t\t\tLength: "+str(x) + "\n"
-                for elem in sorted(l[x].items(), key = lambda x: sum(x[1].values()), reverse = True)[:len_list]:
-
-                    results = sorted(elem[1].items(), key = lambda x: x[1], reverse = True)[:5]
-                    # result is a list with tuples (<pos_tag>, <frequency of combination of pos_tag affix>)
-
-                    results_with_pmi = []
-                    for tuple in results:
-                        results_with_pmi.append(tuple + (round(float(tuple[1])*log(float(tuple[1])/(float(sum(l[x][elem[0]].values()))*float(pos_tags[tuple[0]])), 2), 2),))
-                    # results_with_pmi is the same list as result, but with the pointwise mutual information added to every tuple
-
-                    #d[suffix1][pos_tag1]/(sum(d[suffix1].values()*sum[d[x][pos_tag1] for all x in d if pos_tag1 in d[x]]))
-
-                    print "\t\t\t\t"+elem[0]+"\t"+str(results_with_pmi)
-    t1 = time.time()
-    print "\t\t"+str(t1-t0)+" sec."
-    """

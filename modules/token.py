@@ -12,8 +12,6 @@ class Token(object):
         self.uppercase = False
         self.capitalized = False
 
-
-
         # splits line tab-wise, writes the values in parameters:
         entries = line.split('\t')
 
@@ -28,12 +26,19 @@ class Token(object):
             if not upper_char:
                 self.capitalized = True
 
-        if len(entries) == 2:
+        if len(entries) == 1:
             self.form = entries[0].lower()
+            self.original_form = entries[0]
+            self.gold_pos = ""
+            self.predicted_pos = ""
+        elif len(entries) == 2:
+            self.form = entries[0].lower()
+            self.original_form = entries[0]
             self.gold_pos = entries[1]
             self.predicted_pos = ""
         elif len(entries) == 3:
             self.form = entries[0].lower()
+            self.original_form = entries[0]
             self.gold_pos = entries[1]
             self.predicted_pos = entries[2]
 
@@ -62,7 +67,6 @@ class Token(object):
 
         if self.capitalized:
             self.sparse_feat_vec.append(feat_vec["capitalized"])
-
 
         # form
 
@@ -114,7 +118,6 @@ class Token(object):
                 for j in range(i, len(current_token.form)-(i*2-1)):
                     if "lettercombs_" + current_token.form[j:j+i] in feat_vec:
                         self.sparse_feat_vec.append(feat_vec["lettercombs_" + current_token.form[j:j+i]])
-
 
     # expand sparse feature vectors into all dimensions (by adding 0s):
     def expandFeatVec(self, dimensions):

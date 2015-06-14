@@ -33,7 +33,7 @@ class posTagger(object):
         return model
 
     # train the classifiers using the perceptron algorithm:
-    def train(self, file_in, file_out, max_iterations, top_x):
+    def train(self, file_in, file_out, max_iterations, top_x, decrease_alpha, shuffle_tokens, batch_training):
         print "\tTraining file: " + file_in
 
         print "\tExtracting features"
@@ -98,7 +98,7 @@ class posTagger(object):
 
         for i in range(1, max_iterations + 1):
         
-            #batch training:
+            # batch training:
             predictions = {}
             for tag in classifiers:
                 predictions[tag] = classifiers[tag].weight_vector
@@ -121,24 +121,31 @@ class posTagger(object):
                         arg_max[1] = temp
 
                 # adjust classifier weights for incorrectly predicted tag and gold tag:
+
                 if arg_max[0] != t.gold_pos:
                     predictions[t.gold_pos] = classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha, predictions[t.gold_pos])
                     predictions[arg_max[0]] = classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha, predictions[arg_max[0]])
-            
-            #apply batch results to weight vectors:
-            for tag in classifiers:
-                classifiers[tag].weight_vector = predictions[tag]
-                    
+                else:
+                    if arg_max[0] != t.gold_pos:
+                        classifiers[t.gold_pos].weight_vector = classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha, classifiers[t.gold_pos].weight_vector)
+                        classifiers[arg_max[0]].weight_vector = classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha, classifiers[arg_max[0]].weight_vector)
+
+            # apply batch results to weight vectors:
+            if batch_training:
+                for tag in classifiers:
+                    classifiers[tag].weight_vector = predictions[tag]
 
             # decrease alpha
-            if i % int(round(max_iterations ** 1.0 / float(alpha_decreases))) == 0:
-                # int(round(max_iterations ** 1/alpha_decreases)) is the number x, for which
-                # i % x == 0 is True exactly alpha_decreases times
+            if decrease_alpha:
+                if i % int(round(max_iterations ** 1.0 / float(alpha_decreases))) == 0:
+                    # int(round(max_iterations ** 1/alpha_decreases)) is the number x, for which
+                    # i % x == 0 is True exactly alpha_decreases times
 
-                alpha /= 2
+                    alpha /= 2
             
             # shuffle tokens
-            random.shuffle(tokens)
+            if shuffle_tokens:
+                random.shuffle(tokens)
         for tag in classifiers:
             classifiers[tag].multiply_with_binary()
         # after training is completed, save classifier vectors (model) to file:
@@ -191,7 +198,9 @@ class posTagger(object):
                                               sentence[t_id - 1], sentence[t_id + 1])
                 tokens.append(token)
                 tag_set.add(token.gold_pos)
-                if len(token.sparse_feat_vec) == 0: empty_feat_vec_count += 1
+                if len(token.sparse_feat_vec) == 0:
+                    empty_feat_vec_count += 1
+            tokens.append("_SENTENCE_DELIMITER_")
 
         print "\t\t" + str(empty_feat_vec_count) + " tokens have no features of the feature set"
         y1 = time.time()
@@ -201,28 +210,115 @@ class posTagger(object):
         z0 = time.time()
         output = open(file_out, "w")  # temporarily save classification to file for evaluation
         for ind, t in enumerate(tokens):
-            if ind % (len(tokens) / 10) == 0 and not ind == 0:
-                print "\t\t" + str(ind) + "/" + str(len(tokens))
+            if t == "_SENTENCE_DELIMITER_":
+                print >> output, ""
+            else:
+                if ind % (len(tokens) / 10) == 0 and not ind == 0:
+                    print "\t\t" + str(ind) + "/" + str(len(tokens))
 
-            # expand sparse token feature vectors into all dimensions:
-            # expanded_feat_vec = t.expandFeatVec(len(feat_vec))
+                # expand sparse token feature vectors into all dimensions:
+                # expanded_feat_vec = t.expandFeatVec(len(feat_vec))
 
-            arg_max = ["", 0.0]
-            for tag in classifiers:
-                # temp = classifiers[tag].classify(expanded_feat_vec)
-                temp = classifiers[tag].classify(t.sparse_feat_vec)
+                arg_max = ["", 0.0]
+                for tag in classifiers:
+                    # temp = classifiers[tag].classify(expanded_feat_vec)
+                    temp = classifiers[tag].classify(t.sparse_feat_vec)
 
-                # remember highest classification result:
-                if temp > arg_max[1]:
-                    arg_max[0] = tag
-                    arg_max[1] = temp
+                    # remember highest classification result:
+                    if temp > arg_max[1]:
+                        arg_max[0] = tag
+                        arg_max[1] = temp
 
-            # set predicted POS tag:
-            t.predicted_pos = arg_max[0]
+                # set predicted POS tag:
+                t.predicted_pos = arg_max[0]
 
-            # print token with predicted POS tag to file:
-            print >> output, t.form.encode("utf-8") + "\t" + t.gold_pos.encode("utf-8") + \
-                             "\t" + t.predicted_pos.encode("utf-8")
+                # print token with predicted POS tag to file:
+                print >> output, t.original_form.encode("utf-8") + "\t" + t.gold_pos.encode("utf-8") + \
+                                 "\t" + t.predicted_pos.encode("utf-8")
+        output.close()
+
+        z1 = time.time()
+        print "\t\t" + str(z1 - z0) + " sec."
+
+    def tag(self, file_in, mod, file_out):
+
+        # load classifier vectors (model) and feature vector from file:
+
+        print "\tLoading the model and the features"
+        x0 = time.time()
+
+        model_list = self.load(mod)
+        feat_vec = model_list[0]
+        classifiers = model_list[1]
+
+        x1 = time.time()
+        print "\t" + str(len(feat_vec)) + " features loaded"
+        print "\t\t" + str(x1 - x0) + " sec."
+
+        print "\tTag file: " + file_in
+
+        print "\tCreating tokens with feature vectors"
+        y0 = time.time()
+        tokens = []  # save all instantiated tokens from training data, with finished feature vectors
+        tag_set = set()  # gather all POS types
+        empty_feat_vec_count = 0
+
+        # read in sentences from file and generates the corresponding token objects:
+        for sentence in tk.sentences(codecs.open(file_in, encoding='utf-8')):
+
+            # create sparse feature vector representation for each token:
+            for t_id, token in enumerate(sentence):
+                if t_id == 0:  # first token of sentence
+                    try:
+                        token.createFeatureVector(feat_vec, t_id, sentence[t_id],
+                                                  None, sentence[t_id + 1])
+                    except IndexError:  # happens if sentence length is 1
+                        token.createFeatureVector(feat_vec, t_id, sentence[t_id],
+                                                  None, None)
+                elif t_id == len(sentence) - 1:  # last token of sentence
+                    token.createFeatureVector(feat_vec, t_id, sentence[t_id],
+                                              sentence[t_id - 1], None)
+                else:
+                    token.createFeatureVector(feat_vec, t_id, sentence[t_id],
+                                              sentence[t_id - 1], sentence[t_id + 1])
+                tokens.append(token)
+                tag_set.add(token.gold_pos)
+                if len(token.sparse_feat_vec) == 0:
+                    empty_feat_vec_count += 1
+            tokens.append("_SENTENCE_DELIMITER_")
+
+        print "\t\t" + str(empty_feat_vec_count) + " tokens have no features of the feature set"
+        y1 = time.time()
+        print "\t\t" + str(y1 - y0) + " sec."
+
+        print "\tClassifying tokens"
+        z0 = time.time()
+        output = open(file_out, "w")  # temporarily save classification to file for evaluation
+        for ind, t in enumerate(tokens):
+            if t == "_SENTENCE_DELIMITER_":
+                print >> output, ""
+            else:
+                if ind % (len(tokens) / 10) == 0 and not ind == 0:
+                    print "\t\t" + str(ind) + "/" + str(len(tokens))
+
+                # expand sparse token feature vectors into all dimensions:
+                # expanded_feat_vec = t.expandFeatVec(len(feat_vec))
+
+                arg_max = ["", 0.0]
+                for tag in classifiers:
+                    # temp = classifiers[tag].classify(expanded_feat_vec)
+                    temp = classifiers[tag].classify(t.sparse_feat_vec)
+
+                    # remember highest classification result:
+                    if temp > arg_max[1]:
+                        arg_max[0] = tag
+                        arg_max[1] = temp
+
+                # set predicted POS tag:
+                t.predicted_pos = arg_max[0]
+
+                # print token with predicted POS tag to file:
+                print >> output, t.original_form.encode("utf-8") + "\t" + t.predicted_pos.encode("utf-8")
         output.close()
 
         z1 = time.time()
@@ -257,13 +353,6 @@ class posTagger(object):
         for sentence in tk.sentences(codecs.open(file_in, encoding='utf-8')):
             for tid, token in enumerate(sentence):
 
-                # POS:
-                """
-                if not "prev_pos_"+str(token.gold_pos) in feat_vec:
-                                        feat_vec["prev_pos_"+str(token.gold_pos)] = len(feat_vec.keys())
-                if not "prev_pos_"+str(token.predicted_pos) in feat_vec:
-                                        feat_vec["prev_pos_"+str(token.predicted_pos)] = len(feat_vec.keys())
-                """
                 # form:
                 if not "current_form_" + token.form in feat_vec:
                     feat_vec["current_form_" + token.form] = len(feat_vec)
@@ -300,16 +389,14 @@ if __name__ == '__main__':
     argpar = argparse.ArgumentParser(description='')
 
     mode = argpar.add_mutually_exclusive_group(required=True)
-    mode.add_argument('-feat', dest='features', action='store_true', help='run in feature finding mode')
     mode.add_argument('-train', dest='train', action='store_true', help='run in training mode')
     mode.add_argument('-test', dest='test', action='store_true', help='run in test mode')
     mode.add_argument('-ev', dest='evaluate', action='store_true', help='run in evaluation mode')
+    mode.add_argument('-tag', dest='tag', action='store_true', help='run in tagging mode')
 
     argpar.add_argument('-i', '--infile', dest='in_file', help='in file', required=True)
     argpar.add_argument('-e', '--epochs', dest='epochs', help='epochs', default='1')
     argpar.add_argument('-m', '--model', dest='model', help='model', default='model')
-    # argpar.add_argument('-g','--gold',dest='gold',help='gold',required=True)
-    # argpar.add_argument('-p','--prediction',dest='prediction',help='prediction',required=True)
     argpar.add_argument('-o', '--output', dest='output_file', help='output file', default='output.txt')
     argpar.add_argument('-t1', '--topxform', dest='top_x_form', help='top x form', default=None)
     argpar.add_argument('-t2', '--topxwordlen', dest='top_x_word_len', help='top x word len', default=None)
@@ -317,20 +404,23 @@ if __name__ == '__main__':
     argpar.add_argument('-t4', '--topxprefix', dest='top_x_prefix', help='top x prefix', default=None)
     argpar.add_argument('-t5', '--topxsuffix', dest='top_x_suffix', help='top x suffix', default=None)
     argpar.add_argument('-t6', '--topxlettercombs', dest='top_x_lettercombs', help='top x letter combs', default=None)
+    argpar.add_argument('-decrease-alpha', dest='decrease_alpha', action='store_true', help='decrease alpha', default=False)
+    argpar.add_argument('-shuffle-tokens', dest='shuffle_tokens', action='store_true', help='shuffle tokens', default=False)
+    argpar.add_argument('-batch-training', dest='batch_training', action='store_true', help='batch training', default=False)
+
     args = argpar.parse_args()
 
     t = posTagger()
     if os.stat(args.in_file).st_size == 0:
         print "Input file is empty"
     else:
-        if args.features:
-            print "Running in feature mode\n"
-            # find the most frequent prefixes and affixes:
-            find_affixes(args.in_file, 5)
-        elif args.train:
+        if args.train:
             print "Running in training mode\n"
+            if not args.top_x_form:
+                print args.top_x_form
             top_x = [args.top_x_form, args.top_x_word_len, args.top_x_position, args.top_x_prefix, args.top_x_suffix, args.top_x_lettercombs]
-            t.train(args.in_file, args.model, int(args.epochs), top_x)
+            t.train(args.in_file, args.model, int(args.epochs), top_x, args.decrease_alpha, args.shuffle_tokens, args.batch_training)
+
         elif args.test:
             print "Running in test mode\n"
             t.test(args.in_file, args.model, args.output_file)
@@ -339,6 +429,8 @@ if __name__ == '__main__':
             out_stream = open(args.output_file, 'w')
             evaluate(args.in_file, out_stream)
             out_stream.close()
-
+        elif args.tag:
+            print "Running in tag mode\n"
+            t.tag(args.in_file, args.model, args.output_file)
     t1 = time.time()
     print "\n\tDone. Total time: " + str(t1 - t0) + "sec.\n"

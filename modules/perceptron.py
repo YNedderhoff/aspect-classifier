@@ -13,7 +13,7 @@ class classifier(object):
     def set_binaries(self):
         feature_groups = ["form_", "word_len_", "position_", "prefix_", "suffix_", "lettercombs_"]
         for ind in range(len(self.top_x)):
-            if self.top_x[ind] != None:
+            if self.top_x[ind] is not None:
                 temp = sorted([(x, self.lmi_dict[x][self.tag]) for x in self.feat_vec if self.tag in self.lmi_dict[x] and feature_groups[ind] in x],
                               key = lambda x: x[1], reverse = True)[:int(self.top_x[ind])]
                 for elem in temp:
@@ -42,7 +42,6 @@ class classifier(object):
                     temp_weight_vector[ind] -= step_size * 1.0
         
         return temp_weight_vector
-
 
     def multiply_with_binary(self):
         for ind in range(len(self.binary_vector)):
