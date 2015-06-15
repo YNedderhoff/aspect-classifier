@@ -13,13 +13,13 @@ This perceptron part-of-speech tagger uses the following features:
  - other letter combinations inside the word
 
 The file tagger.py has the following parameters:
-
+```
 [-h] (-train | -test | -ev | -tag) -i IN_FILE [-e EPOCHS]
                  [-m MODEL] [-o OUTPUT_FILE] [-t1 TOP_X_FORM]
                  [-t2 TOP_X_WORD_LEN] [-t3 TOP_X_POSITION] [-t4 TOP_X_PREFIX]
                  [-t5 TOP_X_SUFFIX] [-t6 TOP_X_LETTERCOMBS] [-decrease-alpha]
                  [-shuffle-tokens] [-batch-training]
-
+```
 As you can see, this part-of-speech tagger can be run in 4 different modes: -train, -test, ev, and -tag.
 
 -train
