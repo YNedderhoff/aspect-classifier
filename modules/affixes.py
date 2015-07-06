@@ -23,7 +23,7 @@ def find_affixes(file_in, len_list):
     prefixes = {}
     letter_combs = {}
 
-    pos_tags = {}
+    labels = {}
 
     for i in top_x:
         suffixes[i] = {}
@@ -38,50 +38,50 @@ def find_affixes(file_in, len_list):
     for sentence in tk.sentences(codecs.open(file_in, encoding='utf-8')):
         for token in sentence:
 
-            if token.gold_pos in pos_tags:
-                pos_tags[token.gold_pos] += 1
+            if token.gold_tag_2 in labels:
+                labels[token.gold_tag_2] += 1
             else:
-                pos_tags[token.gold_pos] = 1
+                labels[token.gold_tag_2] = 1
 
             for i in top_x: # for every desired affix length
-                if len(token.form) > i: # word must be longer than suffix length
+                if len(token.form_2) > i: # word must be longer than suffix length
 
-                    # token.form[-i:] is the suffix with length i
+                    # token.form_2[-i:] is the suffix with length i
 
                     # suffixes[i-2] is the dictionary for suffixes with length i
                     # in the list 'suffixes'
 
-                    if token.form[-i:] in suffixes[i]:
-                        if token.gold_pos in suffixes[i][token.form[-i:]]:
-                            suffixes[i][token.form[-i:]][token.gold_pos] += 1
+                    if token.form_2[-i:] in suffixes[i]:
+                        if token.gold_tag_2 in suffixes[i][token.form_2[-i:]]:
+                            suffixes[i][token.form_2[-i:]][token.gold_tag_2] += 1
                         else:
-                            suffixes[i][token.form[-i:]][token.gold_pos] = 1
+                            suffixes[i][token.form_2[-i:]][token.gold_tag_2] = 1
                     else:
-                        suffixes[i][token.form[-i:]] = {token.gold_pos: 1}
-                if len(token.form) > i: # word must be longer than prefix length
+                        suffixes[i][token.form_2[-i:]] = {token.gold_tag_2: 1}
+                if len(token.form_2) > i: # word must be longer than prefix length
 
                     # the same as for suffixes
 
-                    if token.form[:i] in prefixes[i]:
-                        if token.gold_pos in prefixes[i][token.form[:i]]:
-                            prefixes[i][token.form[:i]][token.gold_pos] += 1
+                    if token.form_2[:i] in prefixes[i]:
+                        if token.gold_tag_2 in prefixes[i][token.form_2[:i]]:
+                            prefixes[i][token.form_2[:i]][token.gold_tag_2] += 1
                         else:
-                            prefixes[i][token.form[:i]][token.gold_pos] = 1
+                            prefixes[i][token.form_2[:i]][token.gold_tag_2] = 1
                     else:
-                        prefixes[i][token.form[:i]] = {token.gold_pos: 1}
+                        prefixes[i][token.form_2[:i]] = {token.gold_tag_2: 1}
 
-                if len(token.form) > i+1 and i > 2:
+                if len(token.form_2) > i+1 and i > 2:
 
                     # letter combinations in the word
                     # if they don't overlap with pre- or suffixes
-                    for j in range(i, len(token.form)-(i*2-1)):
-                        if token.form[j:j+i] in letter_combs[i]:
-                            if token.gold_pos in letter_combs[i][token.form[j:j+i]]:
-                                letter_combs[i][token.form[j:j+i]][token.gold_pos] += 1
+                    for j in range(i, len(token.form_2)-(i*2-1)):
+                        if token.form_2[j:j+i] in letter_combs[i]:
+                            if token.gold_tag_2 in letter_combs[i][token.form_2[j:j+i]]:
+                                letter_combs[i][token.form_2[j:j+i]][token.gold_tag_2] += 1
                             else:
-                                letter_combs[i][token.form[j:j+i]][token.gold_pos] = 1
+                                letter_combs[i][token.form_2[j:j+i]][token.gold_tag_2] = 1
                         else:
-                            letter_combs[i][token.form[j:j+i]] = {token.gold_pos: 1}
+                            letter_combs[i][token.form_2[j:j+i]] = {token.gold_tag_2: 1}
 
     t1 = time.time()
     print "\t\t"+str(t1-t0)+" sec."
