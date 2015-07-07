@@ -433,7 +433,7 @@ if __name__ == '__main__':
 
     args = argpar.parse_args()
 
-    tag_set = set(["BB", "BI", "BO", "IB", "II", "IO", "OB", "OO"])
+    tag_set = set(["$START$O", "$START$B", "BB", "BI", "BO", "IB", "II", "IO", "OB", "OO"])
 
     t = posTagger()
     if os.stat(args.in_file).st_size == 0:
