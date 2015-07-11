@@ -33,7 +33,7 @@ class posTagger(object):
         return model
 
     # train the classifiers using the perceptron algorithm:
-    def train(self, file_in, file_out, max_iterations, top_x, decrease_alpha, shuffle_tokens, batch_training):
+    def train(self, file_in, file_out, max_iterations, top_x, decrease_alpha, shuffle_tokens, batch_training, tag_set):
         print "\tTraining file: " + file_in
 
         print "\tExtracting features"
@@ -46,7 +46,6 @@ class posTagger(object):
         print "\tCreating tokens with feature vectors"
         y0 = time.time()
         tokens = []  # save all instantiated tokens from training data, with finished feature vectors
-        tag_set = set()  # gather all POS types
 
         # read in sentences from file and generates the corresponding token objects:
         for sentence in tk.sentences(codecs.open(file_in, encoding='utf-8')):
@@ -70,7 +69,7 @@ class posTagger(object):
                     token.set_adjacent_tokens(sentence[t_id - 1], sentence[t_id + 1])
                     token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                               sentence[t_id - 1], sentence[t_id + 1])
-                token.set_sentence_index(t_id)
+                token.set_sentence_index(t_id - 1, t_id)
                 tokens.append(token)
                 tag_set.add(token.gold_pos)
 
@@ -332,21 +331,26 @@ class posTagger(object):
         affixes = find_affixes(file_in, 5)
 
         # uppercase
-        feat_vec["uppercase"] = len(feat_vec)
+        feat_vec["uppercase_1"] = len(feat_vec)
+        feat_vec["uppercase_2"] = len(feat_vec)
 
         # capitalized
-        feat_vec["capitalized"] = len(feat_vec)
+        feat_vec["capitalized_1"] = len(feat_vec)
+        feat_vec["capitalized_2"] = len(feat_vec)
 
         for l in affixes:
             for affix_length in l:
                 for affix in l[affix_length]:
                     if sum(l[affix_length][affix].values()) > 0:
                         if affixes.index(l) == 0:
-                            feat_vec["suffix_" + affix] = len(feat_vec)
+                            feat_vec["suffix_token_1_" + affix] = len(feat_vec)
+                            feat_vec["suffix_token_2_" + affix] = len(feat_vec)
                         elif affixes.index(l) == 1:
-                            feat_vec["prefix_" + affix] = len(feat_vec)
+                            feat_vec["prefix_token_1_" + affix] = len(feat_vec)
+                            feat_vec["prefix_token_2_" + affix] = len(feat_vec)
                         else:
-                            feat_vec["lettercombs_" + affix] = len(feat_vec)
+                            feat_vec["lettercombs_token_1_" + affix] = len(feat_vec)
+                            feat_vec["lettercombs_token_2_" + affix] = len(feat_vec)
 
         # iterate over all tokens to extract features:
 
@@ -354,28 +358,47 @@ class posTagger(object):
             for tid, token in enumerate(sentence):
 
                 # form:
-                if not "current_form_" + token.form in feat_vec:
-                    feat_vec["current_form_" + token.form] = len(feat_vec)
+                if not "current_form_token_1_" + token.form_1 in feat_vec:
+                    feat_vec["current_form_token_1_" + token.form_1] = len(feat_vec)
+                if not "current_form_token_2_" + token.form_2 in feat_vec:
+                    feat_vec["current_form_token_2_" + token.form_2] = len(feat_vec)
                 if tid < len(sentence)-1:
-                    if not "prev_form_" + token.form in feat_vec:
-                        feat_vec["prev_form_" + token.form] = len(feat_vec)
-                if tid != 0:
-                    if not "next_form_" + token.form in feat_vec:
-                        feat_vec["next_form_" + token.form] = len(feat_vec)
+                    if not "prev_form_token_2_" + token.form_1 in feat_vec:
+                        feat_vec["prev_form_token_2_" + token.form_1] = len(feat_vec)
+                    if not "prev_form_token_1_" + sentence[tid-1].form_1 in feat_vec:
+                        feat_vec["prev_form_token_1_" + sentence[tid-1].form_1] = len(feat_vec)
+                else:
+                    if not "prev_form_token_2_" + token.form_1 in feat_vec:
+                        feat_vec["prev_form_token_2_" + token.form_1] = len(feat_vec)
+                if not "next_form_token_1_" + token.form_2 in feat_vec:
+                    feat_vec["next_form_token_1_" + token.form_2] = len(feat_vec)
+                if not "next_form_token_2_" + sentence[tid+1].form_2 in feat_vec:
+                    feat_vec["next_form_token_2_" + sentence[tid+1].form_2] = len(feat_vec)
+                
 
                 # form length
-                if not "current_word_len_" + str(len(token.form)) in feat_vec:
-                    feat_vec["current_word_len_" + str(len(token.form))] = len(feat_vec)
+                if not "current_word_len_token_1_" + str(len(token.form_1)) in feat_vec:
+                    feat_vec["current_word_len_token_1_" + str(len(token.form_1))] = len(feat_vec)
+                if not "current_word_len_token_2_" + str(len(token.form_2)) in feat_vec:
+                    feat_vec["current_word_len_token_2_" + str(len(token.form_2))] = len(feat_vec)
                 if tid < len(sentence)-1:
-                    if not "prev_word_len_" + str(len(token.form)) in feat_vec:
-                        feat_vec["prev_word_len_" + str(len(token.form))] = len(feat_vec)
-                if tid != 0:
-                    if not "next_word_len_" + str(len(token.form)) in feat_vec:
-                        feat_vec["next_word_len_" + str(len(token.form))] = len(feat_vec)
+                    if not "prev_word_len_token_2_" + str(len(token.form_1)) in feat_vec:
+                        feat_vec["prev_word_len_token_2_" + str(len(token.form_1))] = len(feat_vec)
+                    if not "prev_word_len_token_1_" + str(len(sentence[tid-1].form_1)) in feat_vec:
+                        feat_vec["prev_word_len_token_1_" + str(len(sentence[tid-1].form_1))] = len(feat_vec)
+                else:
+                    if not "prev_word_len_token_2_" + str(len(token.form_1)) in feat_vec:
+                        feat_vec["prev_word_len_token_2_" + str(len(token.form_1))] = len(feat_vec)
+                if not "next_word_len_token_1_" + str(len(token.form_2)) in feat_vec:
+                    feat_vec["next_word_len_token_1_" + str(len(token.form_2))] = len(feat_vec)
+                if not "next_word_len_token_2_" + str(len(sentence[tid+1].form_2)) in feat_vec:
+                    feat_vec["next_word_len_token_2_" + str(len(sentence[tid+1].form_2))] = len(feat_vec)
 
                 # position in sentence
-                if not "position_in_sentence_" + str(tid) in feat_vec:
-                    feat_vec["position_in_sentence_" + str(tid)] = len(feat_vec)
+                if not "position_in_sentence_token_1_" + str(tid-1) in feat_vec:
+                    feat_vec["position_in_sentence_token_1_" + str(tid-1)] = len(feat_vec)
+                if not "position_in_sentence_token_2_" + str(tid) in feat_vec:
+                    feat_vec["position_in_sentence_token_2_" + str(tid)] = len(feat_vec)
 
         return feat_vec
 
@@ -410,6 +433,8 @@ if __name__ == '__main__':
 
     args = argpar.parse_args()
 
+    tag_set = set(["$START$O", "$START$B", "BB", "BI", "BO", "IB", "II", "IO", "OB", "OO"])
+
     t = posTagger()
     if os.stat(args.in_file).st_size == 0:
         print "Input file is empty"
@@ -419,7 +444,7 @@ if __name__ == '__main__':
             if not args.top_x_form:
                 print args.top_x_form
             top_x = [args.top_x_form, args.top_x_word_len, args.top_x_position, args.top_x_prefix, args.top_x_suffix, args.top_x_lettercombs]
-            t.train(args.in_file, args.model, int(args.epochs), top_x, args.decrease_alpha, args.shuffle_tokens, args.batch_training)
+            t.train(args.in_file, args.model, int(args.epochs), top_x, args.decrease_alpha, args.shuffle_tokens, args.batch_training, tag_set)
 
         elif args.test:
             print "Running in test mode\n"
