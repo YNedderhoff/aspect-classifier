@@ -39,12 +39,12 @@ class Token(object):
         elif len(entries) == 2:
             self.form_1 = entries[0].lower()
             self.original_form_1 = entries[0]
-            self.gold_tag_1 = entries[1]
+            self.gold_tag_1 = entries[1].split("-")[0]
             self.predicted_tag_1 = ""
         elif len(entries) == 3:
             self.form_1 = entries[0].lower()
             self.original_form_1 = entries[0]
-            self.gold_tag_1 = entries[1]
+            self.gold_tag_1 = entries[1].split("-")[0]
             self.predicted_tag_1 = entries[2]
 
         elif len(entries) > 3:
@@ -74,12 +74,12 @@ class Token(object):
         elif len(entries) == 2:
             self.form_2 = entries[0].lower()
             self.original_form_2 = entries[0]
-            self.gold_tag_2 = entries[1]
+            self.gold_tag_2 = entries[1].split("-")[0]
             self.predicted_tag_2 = ""
         elif len(entries) == 3:
             self.form_2 = entries[0].lower()
             self.original_form_2 = entries[0]
-            self.gold_tag_2 = entries[1]
+            self.gold_tag_2 = entries[1].split("-")[0]
             self.predicted_tag_2 = entries[2]
 
         elif len(entries) > 3:
@@ -170,11 +170,11 @@ class Token(object):
 
         # position in sentence
 
-        if "position_in_sentence_token_1_" + str(t_id_1) in feat_vec:
-            self.sparse_feat_vec.append(feat_vec["position_in_sentence_token_1_" + str(t_id_1)])
+        if "position_in_sentence_token_1_" + str(current_token.t_id_1) in feat_vec:
+            self.sparse_feat_vec.append(feat_vec["position_in_sentence_token_1_" + str(current_token.t_id_1)])
             
-        if "position_in_sentence_token_2_" + str(t_id_2) in feat_vec:
-            self.sparse_feat_vec.append(feat_vec["position_in_sentence_token_2_" + str(t_id_2)])
+        if "position_in_sentence_token_2_" + str(current_token.t_id_2) in feat_vec:
+            self.sparse_feat_vec.append(feat_vec["position_in_sentence_token_2_" + str(current_token.t_id_2)])
             
         for i in self.top_x:
             if "prefix_" + current_token.form_1[:i] in feat_vec:
@@ -213,7 +213,7 @@ def sentences(file_stream):
         line = line.rstrip()
         if line:
             if len(sentence) == 0:
-                sentence.append(Token("$START$\tX", line)
+                sentence.append(Token("$START$\tX", line))
             else:
                 sentence.append(Token(sentence[-1].line_2, line))
         elif sentence:

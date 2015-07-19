@@ -9,7 +9,7 @@ import modules.token as tk
 import modules.perceptron as perceptron
 import modules.lmi as lmi
 
-from modules.evaluation import evaluate
+#from modules.evaluation import evaluate
 from modules.affixes import find_affixes
 
 
@@ -32,8 +32,26 @@ class posTagger(object):
         stream.close()
         return model
 
+
+    def legal_prev_tags(self, tag, t_id_1):
+	if tag.startswith("B"):
+	    if t_id_1 != 0:
+		return ["BB", "IB", "OB"]
+	    else:
+		return ["BB", "IB", "OB", "XB"]
+	elif tag.startswith("I"):
+	    return ["II", "BI"]
+	elif tag.startswith("O"):
+	    if t_id_1 != 0:
+		return ["OO", "BO", "IO"]
+	    else:
+		return ["OO", "BO", "IO", "XO"]
+	else:
+	    return []
+            
+
     # train the classifiers using the perceptron algorithm:
-    def train(self, file_in, file_out, max_iterations, top_x, decrease_alpha, shuffle_tokens, batch_training, tag_set):
+    def train(self, file_in, file_out, max_iterations, top_x, decrease_alpha, shuffle_tokens, batch_training):
         print "\tTraining file: " + file_in
 
         print "\tExtracting features"
@@ -45,11 +63,11 @@ class posTagger(object):
 
         print "\tCreating tokens with feature vectors"
         y0 = time.time()
-        tokens = []  # save all instantiated tokens from training data, with finished feature vectors
-
+        sentences = []  # save all instantiated tokens from training data, with finished feature vectors
+        tag_set = set([])
         # read in sentences from file and generates the corresponding token objects:
         for sentence in tk.sentences(codecs.open(file_in, encoding='utf-8')):
-
+            temp = []
             # create sparse feature vector representation for each token:
             for t_id, token in enumerate(sentence):
                 if t_id == 0:  # first token of sentence
@@ -70,8 +88,9 @@ class posTagger(object):
                     token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                               sentence[t_id - 1], sentence[t_id + 1])
                 token.set_sentence_index(t_id - 1, t_id)
-                tokens.append(token)
-                tag_set.add(token.gold_pos)
+                temp.append(token)
+                tag_set.add(token.gold_tag_1+token.gold_tag_2)
+            sentences.append(temp)
 
         y1 = time.time()
         print "\t\t" + str(y1 - y0) + " sec."
@@ -80,7 +99,7 @@ class posTagger(object):
         z0 = time.time()
         classifiers = {}
 
-        lmi_calc = lmi.lmi(tokens, feat_vec)
+        lmi_calc = lmi.lmi([t for s in sentences for t in s], feat_vec)
         lmi_dict = lmi_calc.compute_lmi()
 
         # instantiate a classifier for each pos tag type:
@@ -96,39 +115,90 @@ class posTagger(object):
         alpha_decreases = 5
 
         for i in range(1, max_iterations + 1):
-        
-            # batch training:
+
+            #batch training:
             predictions = {}
             for tag in classifiers:
                 predictions[tag] = classifiers[tag].weight_vector
             print "\t\tEpoch " + str(i) + ", alpha = " + str(alpha)
-            for ind, t in enumerate(tokens):
-                if ind % (len(tokens) / 10) == 0 and not ind == 0:
-                    print "\t\t\t" + str(ind) + "/" + str(len(tokens))
+            path = []
+            for ind, s in enumerate(sentences):
+                #if ind % (len(sentences) / 10) == 0 and not ind == 0:
+                #    print "\t\t\t" + str(ind) + "/" + str(len(sentences))
+                for t in s:
+                    if t.t_id_1 == -1 and path:
+                        # adjust classifier weights for incorrectly predicted tag and gold tag:
+                        elem = sorted([(z[0],z[1]) for z in path[-1].items()], key = lambda x : x[1][0])[-1]
+                        gold_tag = elem[1][-1].gold_tag_1+elem[1][-1].gold_tag_2
+                        tok = elem[1][-1]
+                        if elem[0] != gold_tag:
+                            if batch_training:
+                                predictions[gold_tag] = classifiers[gold_tag].adjust_weights(tok.sparse_feat_vec, True, alpha, predictions[gold_tag])
+                                predictions[elem[0]] = classifiers[elem[0]].adjust_weights(tok.sparse_feat_vec, False, alpha, predictions[elem[0]])
+                            else:
+                                classifiers[gold_tag].weight_vector = classifiers[gold_tag].adjust_weights(tok.sparse_feat_vec, True, alpha, classifiers[gold_tag].weight_vector)
+                                classifiers[elem[0]].weight_vector = classifiers[elem[0]].adjust_weights(tok.sparse_feat_vec, False, alpha, classifiers[elem[0]].weight_vector)
+                        next_elem = elem[1][1]
+                        for ind2 in range(len(path)-2, -1, -1):
+                            elem = next_elem
+                            gold_tag = path[ind2][elem][-1].gold_tag_1+path[ind2][elem][-1].gold_tag_2
+                            tok = path[ind2][elem][-1]
+                            if elem != gold_tag:
+                                if batch_training:
+                                    predictions[gold_tag] = classifiers[gold_tag].adjust_weights(tok.sparse_feat_vec, True, alpha, predictions[gold_tag])
+                                    predictions[elem] = classifiers[elem].adjust_weights(tok.sparse_feat_vec, False, alpha, predictions[elem])
+                                else:
+                                    classifiers[gold_tag].weight_vector = classifiers[gold_tag].adjust_weights(tok.sparse_feat_vec, True, alpha, classifiers[gold_tag].weight_vector)
+                                    classifiers[elem].weight_vector = classifiers[elem].adjust_weights(tok.sparse_feat_vec, False, alpha, classifiers[elem].weight_vector)
+                            next_elem = path[ind2][elem][1]
+                                
+                         
+                        
+                        path = [{"XO" : (classifiers["XO"].classify(t.sparse_feat_vec), "", t),
+                                 "XB" : (classifiers["XB"].classify(t.sparse_feat_vec), "", t)}]
+                            
+                    elif t.t_id_1 == -1:
+                        path = [{"XO" : (classifiers["XO"].classify(t.sparse_feat_vec), "", t),
+                                 "XB" : (classifiers["XB"].classify(t.sparse_feat_vec), "", t)}]
+                    else:
+                        temp = {}
+                        for tag in [x for x in tag_set if sum([True if y in path[-1] else False for y in self.legal_prev_tags(x, t.t_id_1)]) > 0]:
+                            c = classifiers[tag].classify(t.sparse_feat_vec)
+                            max_arg = (0.0, "")
+                            for prev_tag in self.legal_prev_tags(tag, t.t_id_1):
+                                if prev_tag in path[-1]:
+                                    if c*path[-1][prev_tag][0] >= max_arg[0] or max_arg[1] == "":
+                                        max_arg = (c*path[-1][prev_tag][0], prev_tag, t)
+                            temp[tag] = max_arg
+                        path.append(temp)
 
-                # expand sparse token feature vectors into all dimensions:
-                # expanded_feat_vec = t.expandFeatVec(len(feat_vec))
-
-                arg_max = [classifiers.keys()[0], 0.0]
-                for tag in classifiers:
-                    # temp = classifiers[tag].classify(expanded_feat_vec)
-                    temp = classifiers[tag].classify(t.sparse_feat_vec)
-
-                    # remember highest classification result:
-                    if temp > arg_max[1]:
-                        arg_max[0] = tag
-                        arg_max[1] = temp
-
-                # adjust classifier weights for incorrectly predicted tag and gold tag:
+            #LAST SENCENTE:
+            # adjust classifier weights for incorrectly predicted tag and gold tag:
+            elem = sorted([(z[0],z[1]) for z in path[-1].items()], key = lambda x : x[1][0])[-1]
+            gold_tag = elem[1][-1].gold_tag_1+elem[1][-1].gold_tag_2
+            tok = elem[1][-1]
+            if elem[0] != gold_tag:
                 if batch_training:
-                    if arg_max[0] != t.gold_pos:
-                        predictions[t.gold_pos] = classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha, predictions[t.gold_pos])
-                        predictions[arg_max[0]] = classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha, predictions[arg_max[0]])
+                    predictions[gold_tag] = classifiers[gold_tag].adjust_weights(tok.sparse_feat_vec, True, alpha, predictions[gold_tag])
+                    predictions[elem[0]] = classifiers[elem[0]].adjust_weights(tok.sparse_feat_vec, False, alpha, predictions[elem[0]])
                 else:
-                    if arg_max[0] != t.gold_pos:
-                        classifiers[t.gold_pos].weight_vector = classifiers[t.gold_pos].adjust_weights(t.sparse_feat_vec, True, alpha, classifiers[t.gold_pos].weight_vector)
-                        classifiers[arg_max[0]].weight_vector = classifiers[arg_max[0]].adjust_weights(t.sparse_feat_vec, False, alpha, classifiers[arg_max[0]].weight_vector)
+                    classifiers[gold_tag].weight_vector = classifiers[gold_tag].adjust_weights(tok.sparse_feat_vec, True, alpha, classifiers[gold_tag].weight_vector)
+                    classifiers[elem[0]].weight_vector = classifiers[elem[0]].adjust_weights(tok.sparse_feat_vec, False, alpha, classifiers[elem[0]].weight_vector)
+            next_elem = elem[1][1]
+            for ind2 in range(len(path)-2, -1, -1):
+                elem = next_elem
+                gold_tag = path[ind2][elem][-1].gold_tag_1+path[ind2][elem][-1].gold_tag_2
+                tok = path[ind2][elem][-1]
+                if elem != gold_tag:
+                    if batch_training:
+                        predictions[gold_tag] = classifiers[gold_tag].adjust_weights(tok.sparse_feat_vec, True, alpha, predictions[gold_tag])
+                        predictions[elem] = classifiers[elem].adjust_weights(tok.sparse_feat_vec, False, alpha, predictions[elem])
+                    else:
+                        classifiers[gold_tag].weight_vector = classifiers[gold_tag].adjust_weights(tok.sparse_feat_vec, True, alpha, classifiers[gold_tag].weight_vector)
+                        classifiers[elem].weight_vector = classifiers[elem].adjust_weights(tok.sparse_feat_vec, False, alpha, classifiers[elem].weight_vector)
+                next_elem = path[ind2][elem][1]
 
+                
             # apply batch results to weight vectors:
             if batch_training:
                 for tag in classifiers:
@@ -144,7 +214,8 @@ class posTagger(object):
             
             # shuffle tokens
             if shuffle_tokens:
-                random.shuffle(tokens)
+                random.shuffle(sentences)
+
         for tag in classifiers:
             classifiers[tag].multiply_with_binary()
         # after training is completed, save classifier vectors (model) to file:
@@ -173,13 +244,13 @@ class posTagger(object):
 
         print "\tCreating tokens with feature vectors"
         y0 = time.time()
-        tokens = []  # save all instantiated tokens from training data, with finished feature vectors
+        sentences = []  # save all instantiated tokens from training data, with finished feature vectors
         tag_set = set()  # gather all POS types
         empty_feat_vec_count = 0
 
         # read in sentences from file and generates the corresponding token objects:
         for sentence in tk.sentences(codecs.open(file_in, encoding='utf-8')):
-
+            temp = []
             # create sparse feature vector representation for each token:
             for t_id, token in enumerate(sentence):
                 if t_id == 0:  # first token of sentence
@@ -195,11 +266,12 @@ class posTagger(object):
                 else:
                     token.createFeatureVector(feat_vec, t_id, sentence[t_id],
                                               sentence[t_id - 1], sentence[t_id + 1])
-                tokens.append(token)
-                tag_set.add(token.gold_pos)
+                token.set_sentence_index(t_id - 1, t_id)
+                temp.append(token)
+                tag_set.add(token.gold_tag_1+token.gold_tag_2)
                 if len(token.sparse_feat_vec) == 0:
                     empty_feat_vec_count += 1
-            tokens.append("_SENTENCE_DELIMITER_")
+            sentences.append(temp)
 
         print "\t\t" + str(empty_feat_vec_count) + " tokens have no features of the feature set"
         y1 = time.time()
@@ -208,32 +280,66 @@ class posTagger(object):
         print "\tClassifying tokens"
         z0 = time.time()
         output = open(file_out, "w")  # temporarily save classification to file for evaluation
-        for ind, t in enumerate(tokens):
-            if t == "_SENTENCE_DELIMITER_":
-                print >> output, ""
-            else:
-                if ind % (len(tokens) / 10) == 0 and not ind == 0:
-                    print "\t\t" + str(ind) + "/" + str(len(tokens))
-
-                # expand sparse token feature vectors into all dimensions:
-                # expanded_feat_vec = t.expandFeatVec(len(feat_vec))
-
-                arg_max = ["", 0.0]
-                for tag in classifiers:
-                    # temp = classifiers[tag].classify(expanded_feat_vec)
-                    temp = classifiers[tag].classify(t.sparse_feat_vec)
-
-                    # remember highest classification result:
-                    if temp > arg_max[1]:
-                        arg_max[0] = tag
-                        arg_max[1] = temp
-
-                # set predicted POS tag:
-                t.predicted_pos = arg_max[0]
-
-                # print token with predicted POS tag to file:
-                print >> output, t.original_form.encode("utf-8") + "\t" + t.gold_pos.encode("utf-8") + \
-                                 "\t" + t.predicted_pos.encode("utf-8")
+        path = []
+        for ind, s in enumerate(sentences):
+            #if ind % (len(sentences) / 10) == 0 and not ind == 0:
+            #    print "\t\t\t" + str(ind) + "/" + str(len(sentences))
+            for t in s:
+                if t.t_id_1 == -1 and path:
+                    sequence = []
+                    # adjust classifier weights for incorrectly predicted tag and gold tag:
+                    elem = sorted([(z[0],z[1]) for z in path[-1].items()], key = lambda x : x[1][0])[-1]
+                    gold_tag = elem[1][-1].gold_tag_1+elem[1][-1].gold_tag_2
+                    tok = elem[1][-1]
+                    sequence.append((tok, gold_tag, elem[0]))
+                    next_elem = elem[1][1]
+                    for ind2 in range(len(path)-2, -1, -1):
+                        elem = next_elem
+                        gold_tag = path[ind2][elem][-1].gold_tag_1+path[ind2][elem][-1].gold_tag_2
+                        tok = path[ind2][elem][-1]
+                        sequence.append((tok, gold_tag, elem))
+                        next_elem = path[ind2][elem][1]
+                            
+                    for x in range(len(sequence)-1,-1,-1):
+                        print >> output, sequence[x][0].original_form_2.encode("utf-8") + "\t" + sequence[x][0].gold_tag_2.encode("utf-8") + \
+                                 "\t" + sequence[x][2][1].encode("utf-8")
+                    print >> output, ""
+                    
+                    path = [{"XO" : (classifiers["XO"].classify(t.sparse_feat_vec), "", t),
+                             "XB" : (classifiers["XB"].classify(t.sparse_feat_vec), "", t)}]
+                        
+                elif t.t_id_1 == -1:
+                    path = [{"XO" : (classifiers["XO"].classify(t.sparse_feat_vec), "", t),
+                             "XB" : (classifiers["XB"].classify(t.sparse_feat_vec), "", t)}]
+                else:
+                    temp = {}
+                    for tag in [x for x in tag_set if sum([True if y in path[-1] else False for y in self.legal_prev_tags(x, t.t_id_1)]) > 0]:
+                        c = classifiers[tag].classify(t.sparse_feat_vec)
+                        max_arg = (0.0, "")
+                        for prev_tag in self.legal_prev_tags(tag, t.t_id_1):
+                            if prev_tag in path[-1]:
+                                if c*path[-1][prev_tag][0] >= max_arg[0]:
+                                    max_arg = (c*path[-1][prev_tag][0], prev_tag, t)
+                        temp[tag] = max_arg
+                    path.append(temp)
+        sequence = []
+        # adjust classifier weights for incorrectly predicted tag and gold tag:
+        elem = sorted([(z[0],z[1]) for z in path[-1].items()], key = lambda x : x[1][0])[-1]
+        gold_tag = elem[1][-1].gold_tag_1+elem[1][-1].gold_tag_2
+        tok = elem[1][-1]
+        sequence.append((tok, gold_tag, elem[0]))
+        next_elem = elem[1][1]
+        for ind2 in range(len(path)-2, -1, -1):
+            elem = next_elem
+            gold_tag = path[ind2][elem][-1].gold_tag_1+path[ind2][elem][-1].gold_tag_2
+            tok = path[ind2][elem][-1]
+            sequence.append((tok, gold_tag, elem))
+            next_elem = path[ind2][elem][1]
+                
+        for x in range(len(sequence)-1,-1,-1):
+            print >> output, sequence[x][0].original_form_2.encode("utf-8") + "\t" + sequence[x][0].gold_tag_2.encode("utf-8") + \
+                     "\t" + sequence[x][2][1].encode("utf-8")
+        print >> output, ""
         output.close()
 
         z1 = time.time()
@@ -356,24 +462,24 @@ class posTagger(object):
 
         for sentence in tk.sentences(codecs.open(file_in, encoding='utf-8')):
             for tid, token in enumerate(sentence):
-
+                
                 # form:
                 if not "current_form_token_1_" + token.form_1 in feat_vec:
                     feat_vec["current_form_token_1_" + token.form_1] = len(feat_vec)
                 if not "current_form_token_2_" + token.form_2 in feat_vec:
                     feat_vec["current_form_token_2_" + token.form_2] = len(feat_vec)
-                if tid < len(sentence)-1:
-                    if not "prev_form_token_2_" + token.form_1 in feat_vec:
-                        feat_vec["prev_form_token_2_" + token.form_1] = len(feat_vec)
+
+                if not "prev_form_token_2_" + token.form_1 in feat_vec:
+                    feat_vec["prev_form_token_2_" + token.form_1] = len(feat_vec)
+                if tid > 0:
                     if not "prev_form_token_1_" + sentence[tid-1].form_1 in feat_vec:
                         feat_vec["prev_form_token_1_" + sentence[tid-1].form_1] = len(feat_vec)
-                else:
-                    if not "prev_form_token_2_" + token.form_1 in feat_vec:
-                        feat_vec["prev_form_token_2_" + token.form_1] = len(feat_vec)
+
                 if not "next_form_token_1_" + token.form_2 in feat_vec:
-                    feat_vec["next_form_token_1_" + token.form_2] = len(feat_vec)
-                if not "next_form_token_2_" + sentence[tid+1].form_2 in feat_vec:
-                    feat_vec["next_form_token_2_" + sentence[tid+1].form_2] = len(feat_vec)
+                    feat_vec["next_form_token_1_" + token.form_2] = len(feat_vec)                    
+                if tid < len(sentence)-1:
+                    if not "next_form_token_2_" + sentence[tid+1].form_2 in feat_vec:
+                        feat_vec["next_form_token_2_" + sentence[tid+1].form_2] = len(feat_vec)
                 
 
                 # form length
@@ -381,18 +487,18 @@ class posTagger(object):
                     feat_vec["current_word_len_token_1_" + str(len(token.form_1))] = len(feat_vec)
                 if not "current_word_len_token_2_" + str(len(token.form_2)) in feat_vec:
                     feat_vec["current_word_len_token_2_" + str(len(token.form_2))] = len(feat_vec)
-                if tid < len(sentence)-1:
-                    if not "prev_word_len_token_2_" + str(len(token.form_1)) in feat_vec:
-                        feat_vec["prev_word_len_token_2_" + str(len(token.form_1))] = len(feat_vec)
+
+                if not "prev_word_len_token_2_" + str(len(token.form_1)) in feat_vec:
+                    feat_vec["prev_word_len_token_2_" + str(len(token.form_1))] = len(feat_vec)
+                if tid > 0:
                     if not "prev_word_len_token_1_" + str(len(sentence[tid-1].form_1)) in feat_vec:
                         feat_vec["prev_word_len_token_1_" + str(len(sentence[tid-1].form_1))] = len(feat_vec)
-                else:
-                    if not "prev_word_len_token_2_" + str(len(token.form_1)) in feat_vec:
-                        feat_vec["prev_word_len_token_2_" + str(len(token.form_1))] = len(feat_vec)
+
                 if not "next_word_len_token_1_" + str(len(token.form_2)) in feat_vec:
                     feat_vec["next_word_len_token_1_" + str(len(token.form_2))] = len(feat_vec)
-                if not "next_word_len_token_2_" + str(len(sentence[tid+1].form_2)) in feat_vec:
-                    feat_vec["next_word_len_token_2_" + str(len(sentence[tid+1].form_2))] = len(feat_vec)
+                if tid < len(sentence)-1:
+                    if not "next_word_len_token_2_" + str(len(sentence[tid+1].form_2)) in feat_vec:
+                        feat_vec["next_word_len_token_2_" + str(len(sentence[tid+1].form_2))] = len(feat_vec)
 
                 # position in sentence
                 if not "position_in_sentence_token_1_" + str(tid-1) in feat_vec:
@@ -433,7 +539,6 @@ if __name__ == '__main__':
 
     args = argpar.parse_args()
 
-    tag_set = set(["$START$O", "$START$B", "BB", "BI", "BO", "IB", "II", "IO", "OB", "OO"])
 
     t = posTagger()
     if os.stat(args.in_file).st_size == 0:
@@ -444,7 +549,7 @@ if __name__ == '__main__':
             if not args.top_x_form:
                 print args.top_x_form
             top_x = [args.top_x_form, args.top_x_word_len, args.top_x_position, args.top_x_prefix, args.top_x_suffix, args.top_x_lettercombs]
-            t.train(args.in_file, args.model, int(args.epochs), top_x, args.decrease_alpha, args.shuffle_tokens, args.batch_training, tag_set)
+            t.train(args.in_file, args.model, int(args.epochs), top_x, args.decrease_alpha, args.shuffle_tokens, args.batch_training)
 
         elif args.test:
             print "Running in test mode\n"
