@@ -39,12 +39,18 @@ class Token(object):
         elif len(entries) == 2:
             self.form_1 = entries[0].lower()
             self.original_form_1 = entries[0]
-            self.gold_tag_1 = entries[1].split("-")[0]
+            if entries[1].split("-")[0] == "B":
+                self.gold_tag_1 = "I"
+            else:
+                self.gold_tag_1 = entries[1].split("-")[0]
             self.predicted_tag_1 = ""
         elif len(entries) == 3:
             self.form_1 = entries[0].lower()
             self.original_form_1 = entries[0]
-            self.gold_tag_1 = entries[1].split("-")[0]
+            if entries[1].split("-")[0] == "B":
+                self.gold_tag_1 = "I"
+            else:
+                self.gold_tag_1 = entries[1].split("-")[0]
             self.predicted_tag_1 = entries[2]
 
         elif len(entries) > 3:
@@ -74,12 +80,18 @@ class Token(object):
         elif len(entries) == 2:
             self.form_2 = entries[0].lower()
             self.original_form_2 = entries[0]
-            self.gold_tag_2 = entries[1].split("-")[0]
+            if entries[1].split("-")[0] == "B":
+                self.gold_tag_2 = "I"
+            else:
+                self.gold_tag_2 = entries[1].split("-")[0]
             self.predicted_tag_2 = ""
         elif len(entries) == 3:
             self.form_2 = entries[0].lower()
             self.original_form_2 = entries[0]
-            self.gold_tag_2 = entries[1].split("-")[0]
+            if entries[1].split("-")[0] == "B":
+                self.gold_tag_2 = "I"
+            else:
+                self.gold_tag_2 = entries[1].split("-")[0]
             self.predicted_tag_2 = entries[2]
 
         elif len(entries) > 3:
@@ -170,38 +182,38 @@ class Token(object):
 
         # position in sentence
 
-        if "position_in_sentence_token_1_" + str(current_token.t_id_1) in feat_vec:
-            self.sparse_feat_vec.append(feat_vec["position_in_sentence_token_1_" + str(current_token.t_id_1)])
+        if "position_in_sentence_token_1_" + str(t_id-1) in feat_vec:
+            self.sparse_feat_vec.append(feat_vec["position_in_sentence_token_1_" + str(t_id-1)])
             
-        if "position_in_sentence_token_2_" + str(current_token.t_id_2) in feat_vec:
-            self.sparse_feat_vec.append(feat_vec["position_in_sentence_token_2_" + str(current_token.t_id_2)])
+        if "position_in_sentence_token_2_" + str(t_id) in feat_vec:
+            self.sparse_feat_vec.append(feat_vec["position_in_sentence_token_2_" + str(t_id)])
             
         for i in self.top_x:
-            if "prefix_" + current_token.form_1[:i] in feat_vec:
-                self.sparse_feat_vec.append(feat_vec["prefix_token_1_" + current_token.form_1[:i]])
-            if "suffix_" + current_token.form_1[-i:] in feat_vec:
-                self.sparse_feat_vec.append(feat_vec["suffix_token_1_" + current_token.form_1[-i:]])
+            if "prefix_" + current_token.form_1[:i] + "_token_1" in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["prefix_" + current_token.form_1[:i] + "_token_1"])
+            if "suffix_" + current_token.form_1[-i:] +"_token_1" in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["suffix_" + current_token.form_1[-i:] + "_token_1"])
 
             if len(current_token.form_1) > i+1 and i > 2:
 
                 # letter combinations in the word
                 # if they don't overlap with pre- or suffixes
                 for j in range(i, len(current_token.form_1)-(i*2-1)):
-                    if "lettercombs_" + current_token.form_1[j:j+i] in feat_vec:
-                        self.sparse_feat_vec.append(feat_vec["lettercombs_token_1_" + current_token.form_1[j:j+i]])
+                    if "lettercombs_" + current_token.form_1[j:j+i] + "_token_1" in feat_vec:
+                        self.sparse_feat_vec.append(feat_vec["lettercombs_" + current_token.form_1[j:j+i] + "_token_1"])
                         
-            if "prefix_" + current_token.form_2[:i] in feat_vec:
-                self.sparse_feat_vec.append(feat_vec["prefix_token_2_" + current_token.form_2[:i]])
-            if "suffix_" + current_token.form_2[-i:] in feat_vec:
-                self.sparse_feat_vec.append(feat_vec["suffix_token_2_" + current_token.form_2[-i:]])
+            if "prefix_" + current_token.form_2[:i] + "_token_2" in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["prefix_" + current_token.form_2[:i] + "_token_2"])
+            if "suffix_" + current_token.form_2[-i:] +"_token_2" in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["suffix_" + current_token.form_2[-i:] + "_token_2"])
 
             if len(current_token.form_2) > i+1 and i > 2:
 
                 # letter combinations in the word
                 # if they don't overlap with pre- or suffixes
                 for j in range(i, len(current_token.form_2)-(i*2-1)):
-                    if "lettercombs_" + current_token.form_2[j:j+i] in feat_vec:
-                        self.sparse_feat_vec.append(feat_vec["lettercombs_token_2_" + current_token.form_2[j:j+i]])
+                    if "lettercombs_" + current_token.form_2[j:j+i] + "_token_2" in feat_vec:
+                        self.sparse_feat_vec.append(feat_vec["lettercombs_" + current_token.form_2[j:j+i] + "_token_2"])
 
 
 

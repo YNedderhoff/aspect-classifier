@@ -7,8 +7,8 @@ class classifier(object):
         self.lmi_dict = lmi_dict
         self.feat_vec = feat_vec
         self.weight_vector = [0.0 for ind in range(len(feat_vec))]
-        self.binary_vector = [0 for ind in range(len(feat_vec))]
-        self.set_binaries()
+        self.binary_vector = [1 for ind in range(len(feat_vec))]
+        # self.set_binaries()
 
     def set_binaries(self):
         feature_groups = ["form_", "word_len_", "position_", "prefix_", "suffix_", "lettercombs_"]
