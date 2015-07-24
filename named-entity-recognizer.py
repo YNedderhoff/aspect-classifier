@@ -567,6 +567,31 @@ class posTagger:
                 if not "position_in_sentence_token_2_" + str(tid) in feat_vec:
                     feat_vec["position_in_sentence_token_2_" + str(tid)] = len(feat_vec)
 
+                # pos tag (only if exists in training data)
+
+                if token.pos_tag_1:
+                    if not "current_word_pos_token_1_" + str(token.pos_tag_1) in feat_vec:
+                        feat_vec["current_word_pos_token_1_" + str(token.pos_tag_1)] = len(feat_vec)#
+                if token.pos_tag_2:
+                    if not "current_word_pos_token_2_" + str(token.pos_tag_2) in feat_vec:
+                        feat_vec["current_word_pos_token_2_" + str(token.pos_tag_2)] = len(feat_vec)
+
+                if token.pos_tag_1:
+                    if not "prev_word_pos_token_2_" + str(token.pos_tag_1) in feat_vec:
+                        feat_vec["prev_word_pos_token_2_" + str(token.pos_tag_1)] = len(feat_vec)
+                if tid > 0:
+                    if sentence[tid - 1].pos_tag_1:
+                        if not "prev_word_pos_token_1_" + str(sentence[tid - 1].pos_tag_1) in feat_vec:
+                            feat_vec["prev_word_pos_token_1_" + str(sentence[tid - 1].pos_tag_1)] = len(feat_vec)
+
+                if token.pos_tag_2:
+                    if not "next_word_pos_token_1_" + str(token.pos_tag_2) in feat_vec:
+                        feat_vec["next_word_pos_token_1_" + str(token.pos_tag_2)] = len(feat_vec)
+                if tid < len(sentence) - 1:
+                    if sentence[tid + 1].pos_tag_2:
+                        if not "next_word_pos_token_2_" + str(sentence[tid + 1].pos_tag_2) in feat_vec:
+                            feat_vec["next_word_pos_token_2_" + str(sentence[tid + 1].pos_tag_2)] = len(feat_vec)
+
         return feat_vec
 
 

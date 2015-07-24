@@ -1,6 +1,7 @@
 #!/bin/bash
 
-CORPORA="../team-lab-ss2015/data/reviews/usage-iob"
+#CORPORA="../team-lab-ss2015/data/reviews/usage-iob"
+CORPORA="../team-lab-ss2015/data/reviews/usage-iob-pos-converted"
 
 train=1
 test=1
@@ -13,12 +14,15 @@ tag=0
 if [ "$train" = 1 ]; then
     #python -u tagger.py -train -i $CORPORA/train.col -e 5 -m model
     #python -u tagger.py -train -i $CORPORA/train_top5000.col -t $p -e 5 -m $MODELS/model$COUNTER
-    python -u named-entity-recognizer.py -train -i $CORPORA/en-coffeemachine-a1-target.iob -e 100 -m model -decrease-alpha -batch-training -shuffle-sentences
+    python -u named-entity-recognizer.py -train -i $CORPORA/train.iob -e 100 -m model -decrease-alpha -batch-training -shuffle-sentences
+
 fi
 
 # Test the model
 if [ "$test" = 1 ]; then
-    python -u named-entity-recognizer.py -test -i $CORPORA/en-coffeemachine-a1-target.iob -m model -o prediction.col
+    python -u named-entity-recognizer.py -test -i $CORPORA/converted_pos_tagged_en-washer-a1-target.iob -m model -o prediction.col
+    #python -u named-entity-recognizer.py -test -i $CORPORA/en-washer-a1-target.iob -m model -o prediction.col
+
     #python -u tagger.py -test -i $CORPORA/dev_top5000.col -m $MODELS/model$COUNTER -o $PREDICTIONS/prediction$COUNTER.col
     #python tagger.py -test -i $CORPORA/dev_top5000.col -m model -o prediction.col
 fi

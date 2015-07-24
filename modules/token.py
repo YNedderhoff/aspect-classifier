@@ -39,18 +39,31 @@ class Token(object):
         elif len(entries) == 2:
             self.form_1 = entries[0].lower()
             self.original_form_1 = entries[0]
-            if entries[1].split("-")[0] == "B":
-                self.gold_tag_1 = "I"
+
+            if "," in entries[1]:  # needed if second column contains the pos tag
+                gold_tag_full = entries[1].split(",")[0]
+                self.pos_tag_1 = entries[1].split(",")[1]
+                if gold_tag_full.split("-")[0] == "B":
+                    self.gold_tag_1 = "I"
+                else:
+                    self.gold_tag_1 = gold_tag_full.split("-")[0]
             else:
-                self.gold_tag_1 = entries[1].split("-")[0]
+                self.pos_tag_1 = ""
+                if entries[1].split("-")[0] == "B":
+                    self.gold_tag_1 = "I"
+                else:
+                    self.gold_tag_1 = entries[1].split("-")[0]
+
             self.predicted_tag_1 = ""
         elif len(entries) == 3:
             self.form_1 = entries[0].lower()
             self.original_form_1 = entries[0]
+
             if entries[1].split("-")[0] == "B":
                 self.gold_tag_1 = "I"
             else:
                 self.gold_tag_1 = entries[1].split("-")[0]
+
             self.predicted_tag_1 = entries[2]
 
         elif len(entries) > 3:
@@ -80,10 +93,20 @@ class Token(object):
         elif len(entries) == 2:
             self.form_2 = entries[0].lower()
             self.original_form_2 = entries[0]
-            if entries[1].split("-")[0] == "B":
-                self.gold_tag_2 = "I"
+
+            if "," in entries[1]:  # needed if second column contains the pos tag
+                gold_tag_full = entries[1].split(",")[0]
+                self.pos_tag_2 = entries[1].split(",")[1]
+                if gold_tag_full.split("-")[0] == "B":
+                    self.gold_tag_2 = "I"
+                else:
+                    self.gold_tag_2 = gold_tag_full.split("-")[0]
             else:
-                self.gold_tag_2 = entries[1].split("-")[0]
+                self.pos_tag_2 = ""
+                if entries[1].split("-")[0] == "B":
+                    self.gold_tag_2 = "I"
+                else:
+                    self.gold_tag_2 = entries[1].split("-")[0]
             self.predicted_tag_2 = ""
         elif len(entries) == 3:
             self.form_2 = entries[0].lower()
@@ -179,6 +202,33 @@ class Token(object):
         if next_token:
             if "next_word_len_token_2_" + str(len(next_token.form_2)) in feat_vec:
                 self.sparse_feat_vec.append(feat_vec["next_word_len_token_2_" + str(len(next_token.form_2))])
+
+        # pos_tag
+        if current_token.pos_tag_1:
+            if "current_word_pos_token_1_" + str(current_token.pos_tag_1) in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["current_word_pos_token_1_" + str(current_token.pos_tag_1)])
+        if current_token.pos_tag_2:
+            if "current_word_pos_token_2_" + str(current_token.pos_tag_2) in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["current_word_pos_token_2_" + str(current_token.pos_tag_2)])
+    
+        # if applicable, the previous pos:
+        if previous_token:
+            if previous_token.pos_tag_1:
+                if "prev_word_pos_token_1_" + str(previous_token.pos_tag_1) in feat_vec:
+                    self.sparse_feat_vec.append(feat_vec["prev_word_pos_token_1_" + str(previous_token.pos_tag_1)])
+            if previous_token.pos_tag_2:
+                if "prev_word_pos_token_2_" + str(current_token.pos_tag_1) in feat_vec:
+                    self.sparse_feat_vec.append(feat_vec["prev_word_pos_token_2_" + str(current_token.pos_tag_1)])
+
+        # if applicable, the next token pos:
+        if current_token.pos_tag_2:
+            if "next_word_pos_token_1_" + str(current_token.pos_tag_2) in feat_vec:
+                self.sparse_feat_vec.append(feat_vec["next_word_pos_token_1_" + str(current_token.pos_tag_2)])
+
+        if next_token:
+            if next_token.pos_tag_2:
+                if "next_word_pos_token_2_" + str(next_token.pos_tag_2) in feat_vec:
+                    self.sparse_feat_vec.append(feat_vec["next_word_pos_token_2_" + str(next_token.pos_tag_2)])
 
         # position in sentence
 
