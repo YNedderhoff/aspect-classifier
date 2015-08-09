@@ -133,7 +133,7 @@ class posTagger:
             # batch training:
             predictions = {}
             for tag in classifiers:
-                predictions[tag] = classifiers[tag].weight_vector
+                predictions[tag] = [x for x in classifiers[tag].weight_vector]
             print "\t\tEpoch " + str(i) + ", alpha = " + str(alpha)
             path = []
             normalization_constant = 10.0 ** 5.0
@@ -253,7 +253,7 @@ class posTagger:
             # apply batch results to weight vectors:
             if batch_training:
                 for tag in classifiers:
-                    classifiers[tag].weight_vector = predictions[tag]
+                    classifiers[tag].weight_vector = [x for x in predictions[tag]]
 
             # decrease alpha
             if decrease_alpha:
